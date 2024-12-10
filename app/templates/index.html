@@ -1,16 +1,121 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Trang chu</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
-</head>
-<body>
-    <h1>E-commerce Website!</h1>
-    <ul>
-        {% for i in range(10) %}
-        <li>2 * {{ i }} = {{ 2*i }}</li>
-        {% endfor %}
-    </ul>
-</body>
-</html>
+{% extends 'layout/base.html' %}
+
+{% block content %}
+<!-- Carousel -->
+<div class="container-fluid py-5">
+    <div class="mb-4 ms-4">
+        <h5 class="d-inline-block text-primary text-uppercase border-bottom border-5">Tin tức</h5>
+<!--        <h1 class="display-4"><b>Quy trình khám bệnh tại phòng khám</b></h1>-->
+    </div>
+    <div id="demo" class="carousel slide" data-bs-ride="carousel">
+        <!-- Indicators/dots -->
+        <div class="carousel-indicators">
+            <button type="button" data-bs-target="#demo" data-bs-slide-to="0" class="active"></button>
+            <button type="button" data-bs-target="#demo" data-bs-slide-to="1"></button>
+            <button type="button" data-bs-target="#demo" data-bs-slide-to="2"></button>
+        </div>
+
+        <!-- The slideshow/carousel -->
+        <div class="carousel-inner">
+            <div class="carousel-item active">
+                <img src="https://img.upanh.tv/2024/12/08/D6b81b8c2017905567d9ba4af37c6b51f-1.png" alt="Los Angeles"
+                     class="d-block w-100">
+            </div>
+            <div class="carousel-item">
+                <img src="https://i.upanh.org/2024/12/08/Screenshot-2024-10-30-1028028b67d18249e55939.png" alt="Chicago"
+                     class="d-block w-100">
+            </div>
+            <div class="carousel-item">
+                <img src="https://img.upanh.tv/2024/12/08/D6b81b8c2017905567d9ba4af37c6b51f-1.png" alt="New York"
+                     class="d-block w-100">
+            </div>
+        </div>
+
+        <!-- Left and right controls/icons -->
+        <button class="carousel-control-prev" type="button" data-bs-target="#demo" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon"></span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#demo" data-bs-slide="next">
+            <span class="carousel-control-next-icon"></span>
+        </button>
+    </div>
+</div>
+
+<div class="container-fluid py-5">
+    <div class="container">
+        <div class="row gx-5">
+            <div class="col-lg-5 mb-5 mb-lg-0" style="min-height: 500px;">
+                <div class="position-relative h-100">
+                    <img class="position-absolute w-100 h-100 rounded" src="img/about.jpg" style="object-fit: cover;">
+                </div>
+            </div>
+            <div class="col-lg-7">
+                <div class="mb-4">
+                    <h5 class="d-inline-block text-primary text-uppercase border-bottom border-5">Về chúng tôi</h5>
+                    <h1 class="display-4"><b>Dịch vụ chăm sóc y tế tốt nhất cho bạn và người thân</b></h1>
+                </div>
+                <p>Phòng khám đa khoa Group21 được thành lập năm 2077 với niềm tự hào là một trong những Phòng khám điện
+                    tử theo tiêu chuẩn quốc tế đầu tiên tại Việt Nam được đầu tư trang thiết bị tiên tiến và hiện đại.
+
+                    Với hệ thống quản lý hồ sơ điện tử, khách hàng xem được toàn bộ kết quả khám và xét nghiệm sau 24h
+                    trên Internet nhưng vẫn đảm bảo bí mật kết quả khám tuyệt đối. Việc ứng dụng quản trị hồ sơ điện tử
+                    sẽ tiết kiệm thời gian và giảm sự chờ đợi của khách hàng khi đến khám. Toàn bộ kết quả xét nghiệm
+                    được chạy bằng hóa chất của chính hãng, không gửi mẫu xét nghiệm ra bên ngoài, không làm quick test.
+
+                    Dựa trên uy tín, chất lượng đã tạo dựng, Phòng khám đa khoa Group21 tin tưởng sẽ trở thành nơi bạn
+                    gửi trọn niềm tin trong việc chăm sóc sức khỏe của bản thân và gia đình bạn.</p>
+                <div class="row g-3 pt-3">
+                    <div class="col-sm-3 col-6">
+                        <div class="bg-light text-center rounded-circle py-4">
+                            <i class="fa fa-3x fa-user-md text-primary mb-3"></i>
+                            <h6 class="mb-0 text-primary">Bác sĩ<small class="d-block text-dark">Kinh nghiệm</small>
+                            </h6>
+                        </div>
+                    </div>
+                    <div class="col-sm-3 col-6">
+                        <div class="bg-light text-center rounded-circle py-4">
+                            <i class="fa fa-3x fa-procedures text-primary mb-3"></i>
+                            <h6 class="mb-0 text-primary">Dịch vụ<small class="d-block text-dark">Khẩn cấp</small></h6>
+                        </div>
+                    </div>
+                    <div class="col-sm-3 col-6">
+                        <div class="bg-light text-center rounded-circle py-4">
+                            <i class="fa fa-3x fa-microscope text-primary mb-3"></i>
+                            <h6 class="mb-0 text-primary">Xét nghiệm<small class="d-block text-dark">Chuẩn xác</small>
+                            </h6>
+                        </div>
+                    </div>
+                    <div class="col-sm-3 col-6">
+                        <div class="bg-light text-center rounded-circle py-4">
+                            <i class="fa fa-3x fa-ambulance text-primary mb-3"></i>
+                            <h6 class="mb-0 text-primary">Xe cứu thương<small class="d-block text-dark">Miễn phí</small>
+                            </h6>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid py-5">
+    <div class="mb-4 ms-4">
+        <h5 class="d-inline-block text-primary text-uppercase border-bottom border-5">Hướng dẫn</h5>
+        <h1 class="display-4"><b>Quy trình khám bệnh tại phòng khám</b></h1>
+    </div>
+    <img src="https://res-console.cloudinary.com/dq2jtbrda/media_explorer_thumbnails/3cf9e28254ce7efc4ef5c97e9ab8c5a9/detailed"
+         alt="" class="process-img text-center">
+</div>
+
+<div class="container-fluid py-5">
+    <div class="container">
+        <div class="text-center mx-auto mb-5" style="max-width: 500px;">
+            <h5 class="d-inline-block text-primary text-uppercase border-bottom border-5"><b>ĐÁNH GIÁ CỦA BỆNH NHÂN</b>
+            </h5>
+            <h1 class="display-4">Các bệnh nhân nói gì về dịch vụ của chúng tôi?</h1>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}
