@@ -1,7 +1,5 @@
 from flask import render_template
-from PhongKhamTu.app import app
-
-
+from app import app
 
 @app.route("/")
 def index():
@@ -18,6 +16,7 @@ def examine():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
 
 
 
