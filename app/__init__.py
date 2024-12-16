@@ -2,7 +2,7 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from urllib.parse import quote  # Do mật khẩu DB có ký tự đặc biệt
-
+import cloudinary
 
 app = Flask(__name__) # Tất cả cấu hình của dự án nằm trong đây
 app.secret_key = 'SDASDEW!21321321s2'
@@ -15,3 +15,10 @@ app.config["SO_BENH_NHAN_TRONG_NGAY"] = 20
 
 db = SQLAlchemy(app)
 login = LoginManager(app)  # Nguyên tắc của login cần phải có 1 cái hàm bên index.py
+
+cloudinary.config(  # Paste cấu hình vào
+    cloud_name="dq2jtbrda",
+    api_key="341769211452564",
+    api_secret="_5G4itRP_2YE52K8srR6cJO5Las",  # Click 'View API Keys' above to copy your API secret
+    secure=True
+)

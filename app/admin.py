@@ -61,8 +61,6 @@ class TTHDView(TNView):
         return self.render('admin/hoadon.html', hoadons = hds, pages = math.ceil(total/so_phan_tu))
 admin.add_view(TTHDView(name='Thanh toán hóa đơn'))
 
-
-
 #View của Admin:
 class UserView(AdminView):
     column_list = ['username', 'ten', 'ngaysinh', 'gioitinh', 'chuyennganh.ten', 'vaitro', 'sdt']

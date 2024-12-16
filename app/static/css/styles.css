@@ -79,5 +79,18 @@ input::-webkit-inner-spin-button {
     opacity: 0.4
 }
 
+#sdtstatus{
+    font-weight: bold;
+}
 
+.message-error {
+    color: red;
+    font-weight: bold;
+}
+
+    /* Thông điệp màu xanh lá cho thành công */
+.message-success {
+     color: green;
+     font-weight: bold;
+}
 

@@ -48,6 +48,7 @@ class User(db.Model, UserMixin):
                            lazy=True)
     lichkhams = relationship('LichKham', backref='user',
                              lazy=True)
+    phieudatlichs = relationship('PhieuDatLich', backref='user', lazy=True)
 
     def __init__(self, ten, username, password, vaitro, sdt=None, ngaysinh=None, chuyennganh_id=None, email=None,
                  gioitinh=None):
@@ -79,6 +80,7 @@ class BenhNhan(db.Model):
     email = Column(String(50))
     phieukhambenhs = relationship('PhieuKhamBenh', backref='benhnhan',
                                   lazy=True)
+    phieudatlichs = relationship('PhieuDatLich', backref='benhnhan', lazy=True)
 
 
 class DanhSachKham(db.Model):
@@ -197,16 +199,30 @@ class KhungGio(db.Model):
     lichkhams = relationship('LichKham', backref='khunggio',
                              lazy=True)
 
-
 class LichKham(db.Model):
     id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey(User.id), nullable=False)
     khunggio_id = Column(Integer, ForeignKey(KhungGio.id), nullable=False)
-    ngaydatlich = Column(DateTime, default=datetime.datetime.now())
+    ngay = Column(Date, default=datetime.datetime.now())
     danhsachkham_id = Column(Integer, ForeignKey(DanhSachKham.id), nullable=False)
     isTrong = Column(Boolean)
 
-# class PhieuDatLich:
+class PhieuDatLich(db.Model):
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    ngaydatlich = Column(DateTime, default=datetime.datetime.now())
+    benhnhan_id = Column(Integer, ForeignKey(BenhNhan.id), nullable=False)
+    user_id = Column(Integer, ForeignKey(User.id), nullable=False)
+    trieuchung = Column(String(50))
+
+class BinhLuan(db.Model):
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    ten = Column(String(150), nullable=False)
+    nghenghiep = Column(String(150), nullable=False)
+    binhluan = Column(String(255), nullable=False)
+    avatar = Column(String(100),
+                    default='https://res.cloudinary.com/dxxwcby8l/image/upload/v1647056401/ipmsmnxjydrhpo21xrd8.jpg')
+    star_value = Column(Integer)
+    ngaytao = Column(DateTime, default=datetime.datetime.now())
 
 if __name__ == '__main__':  # Tự phát hiện cái bảng này chưa có và nó tạo ra
     with app.app_context():  # Trong phiên bản mới bắt lệnh này chạy trong ngữ cảnh ứng dụng
@@ -368,6 +384,13 @@ if __name__ == '__main__':  # Tự phát hiện cái bảng này chưa có và n
         db.session.add_all([cdv1, cdv2, cdv3])
         db.session.commit()
 
+        # Các bình luận
+        bl1 = BinhLuan(ten='Yến Hoàng', nghenghiep='Kế Toán', binhluan='bệnh viện sạch sẽ, dịch vụ nhanh chóng',
+                       star_value=5)
+        bl2 = BinhLuan(ten='Mi Hồ', nghenghiep='Bất động sản', binhluan='bệnh viện tốt, dịch vụ ổn', star_value=2)
+        bl3 = BinhLuan(ten='Khoa Nguyễn', nghenghiep='Giáo viên tâm lý', binhluan='bệnh viện ok', star_value=3)
+        db.session.add_all([bl1, bl2, bl3])
+        db.session.commit()
 
 # LichKham: Bác sĩ - giờ (đưa ra cố định) - Istrống ==> Đủ 40 hàng thì không khám nữa: Ngày: isTrong = False
 #

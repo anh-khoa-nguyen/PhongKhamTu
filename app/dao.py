@@ -1,11 +1,12 @@
 import datetime
 from datetime import date
 
-from app.models import User, HoaDon, PhieuKhamBenh, BenhNhan, ChuyenNganh, UserRole, LichKham, KhungGio  # Dùng DL trong bảng dữ liệu
-from app.models import PhieuKhamBenh, ChiTietPhieuKham, Thuoc, DonViThuoc
+from app.models import User, HoaDon, PhieuKhamBenh, BenhNhan, ChuyenNganh, UserRole, LichKham, KhungGio, PhieuDatLich  # Dùng DL trong bảng dữ liệu
+from app.models import PhieuKhamBenh, ChiTietPhieuKham, Thuoc, DonViThuoc, BinhLuan
 from app import app, db  # Import để lấy các thông số cấu hình, db để thêm vào CSDL
 import hashlib
 from sqlalchemy import extract, func
+import cloudinary.uploader
 
 def get_day(input_date=None):
     """
@@ -42,9 +43,11 @@ import datetime
 
 def get_remaining_days(input_date=None):
     """
-    Trả về danh sách các ngày còn lại trong tuần (bao gồm ngày hiện tại), với mỗi ngày đại diện bằng số (2 = Thứ 2, ..., 8 = CN).
+    Trả về danh sách các ngày còn lại trong tuần (bao gồm ngày hiện tại),
+    với mỗi ngày là tuple gồm (thứ, ngày cụ thể).
+
     :param input_date: Ngày (kiểu datetime.date). Mặc định là ngày hôm nay.
-    :return: Danh sách các ngày còn lại trong tuần (dạng mảng số).
+    :return: Mảng tuple (thứ, ngày cụ thể).
     """
     # Lấy ngày hiện tại nếu không truyền tham số
     if input_date is None:
@@ -53,10 +56,16 @@ def get_remaining_days(input_date=None):
     # Lấy thứ của ngày hiện tại (0 = Thứ Hai, ..., 6 = Chủ Nhật)
     current_day_index = input_date.weekday()
 
-    # Chuyển current_day_index về dạng số tương ứng (2 = Thứ 2, ..., 8 = CN)
-    # Kết quả sẽ là [2, 3, ..., 8] tương ứng với các ngày còn lại trong tuần
-    remaining_days = [i + 2 for i in range(current_day_index, 7)]
+    # Tạo danh sách các ngày còn lại trong tuần
+    remaining_days = []
 
+    for i in range(current_day_index, 7):
+        # Tính ngày cụ thể
+        day_date = input_date + datetime.timedelta(days=(i - current_day_index))
+        # Tính thứ (2 = Thứ 2, ..., 8 = CN)
+        day_number = i + 2
+        # Tạo tuple (thứ, ngày cụ thể)
+        remaining_days.append((day_number, day_date.strftime('%Y-%m-%d')))
     return remaining_days
 
 
@@ -92,17 +101,21 @@ def load_object(object):
     query = object.query.order_by("id")
     return query.all()
 
-def load_bs(chuyennganh=None):
+
+def load_bs(chuyennganh=None, tenbs = None):
     query = User.query.filter(User.vaitro == UserRole.BACSI)
 
     if chuyennganh:
         query = db.session.query(User.id, User.ten, ChuyenNganh.ten).select_from(User).join(ChuyenNganh)
         query = query.filter(User.vaitro == UserRole.BACSI, ChuyenNganh.id == chuyennganh)
 
+    if tenbs:
+        query = query.filter(User.vaitro == UserRole.BACSI, User.ten == tenbs)
+
     return query.all()
 
 
-def load_bstrucca(chuyennganh=None):
+def load_bstrucca(chuyennganh=None, ngay=datetime.date.today()):
     """
     Lấy danh sách các bác sĩ trực ca dựa trên lịch khám (isTrong = True) và thông tin khung giờ.
 
@@ -112,18 +125,19 @@ def load_bstrucca(chuyennganh=None):
     # Gọi hàm load_bs để lấy danh sách bác sĩ theo chuyên ngành (User.vaitro == UserRole.BACSI)
     bacsi_query = load_bs(chuyennganh)
 
-    # Thực hiện truy vấn chính, kết hợp với các bảng liên quan như KhungGio
+    # Truy vấn lịch trực ca của bác sĩ theo ngày và chuyên ngành
     query = db.session.query(
         User.ten.label("bacsi_ten"),
         ChuyenNganh.ten.label("chuyennganh_ten"),
         KhungGio.khoangthoigian.label("khunggio_ten"),
+        KhungGio.id.label("khunggio_id")
     ).join(LichKham, LichKham.user_id == User.id) \
         .join(KhungGio, LichKham.khunggio_id == KhungGio.id) \
         .join(ChuyenNganh, ChuyenNganh.id == User.chuyennganh_id) \
-        .filter(User.id.in_([b.id for b in bacsi_query]), LichKham.isTrong == True)
+        .filter(User.id.in_([b.id for b in bacsi_query])) \
+        .filter(LichKham.isTrong == True, LichKham.ngay == ngay)  # Lọc theo ngày và lịch còn trống
 
     return query.all()
-
 
 
 def load_hoadon(page = 1, date = datetime.date.today()):  # Load danh mục sản phẩm
@@ -178,9 +192,6 @@ def load_sobntoida():
     sobntoida = app.config['SO_BENH_NHAN_TRONG_NGAY']
     return sobntoida
 
-def dang_ky_kham(tenbn, sdtbn, emailbn, sinhbn, gioibn, trieuchungbn, lichkhambn):
-    u = User(ten=tenbn, sdt=sdtbn, ngaysinh=sinhbn, gioitinh=gioibn)
-
 def check_benhnhan(sdt):
     """
     Kiểm tra xem số điện thoại có tồn tại trong bảng BenhNhan.
@@ -197,6 +208,50 @@ def check_benhnhan(sdt):
         }
         return True, patient_info
     return False, None
+
+def dang_ky_kham(tenbn, sdtbn, emailbn, sinhbn, gioibn, trieuchungbn, bacsikhambn, ngaykhambn, giokhambn):
+    # Kiểm tra xem bệnh nhân đã tồn tại dựa trên số điện thoại
+    is_exist, benhnhan_info = check_benhnhan(sdtbn)
+
+    if is_exist:
+        # Nếu bệnh nhân đã tồn tại, chỉ tạo phiếu đặt lịch mới
+        phieudatlich = PhieuDatLich(
+            benhnhan_id=benhnhan_info["id"],  # Lấy ID bệnh nhân từ thông tin đã có
+            trieuchung=trieuchungbn,
+            user_id=bacsikhambn  # Bác sĩ phụ trách
+        )
+        db.session.add(phieudatlich)
+    else:
+        # Nếu bệnh nhân chưa tồn tại, tạo mới bệnh nhân và phiếu đặt lịch
+        benhnhan = BenhNhan(
+            ten=tenbn,
+            sdt=sdtbn,
+            ngaysinh=sinhbn,
+            gioitinh=gioibn,
+            email=emailbn
+        )
+        db.session.add(benhnhan)  # Thêm bệnh nhân vào cơ sở dữ liệu
+
+        # Tạo phiếu đặt lịch mới
+        phieudatlich = PhieuDatLich(
+            benhnhan = benhnhan,  # Sử dụng ID của bệnh nhân vừa tạo
+            trieuchung=trieuchungbn,
+            user_id=bacsikhambn
+        )
+        db.session.add(phieudatlich)
+
+    # Tìm lịch khám phù hợp với ngày và giờ khám được chọn
+    lich_kham = LichKham.query.filter(
+        LichKham.ngay == ngaykhambn,
+        LichKham.khunggio_id == giokhambn,
+        LichKham.isTrong == True  # Chỉ lấy những lịch còn trống
+    ).first()
+    if lich_kham:
+        # Nếu tìm thấy, cập nhật isTrong thành False (0)
+        lich_kham.isTrong = False
+
+    # Commit tất cả các thay đổi vào cơ sở dữ liệu
+    db.session.commit()
 
 def medicine_rates_month_stats(month):
     return db.session.query(Thuoc.ten,
@@ -215,7 +270,21 @@ def tansuatkham(month):
             .group_by (extract('day', PhieuKhamBenh.ngaykham)) \
             .order_by(extract('day', PhieuKhamBenh.ngaykham)).all()
 
+def load_comments():
+    query = BinhLuan.query.order_by(-BinhLuan.id)
+    return query.all()
+
+def add_comment(ten, nghenghiep, binhluan,star_value, avatar= None):
+    u = BinhLuan(ten=ten, nghenghiep = nghenghiep, binhluan = binhluan, star_value = star_value)
+    if avatar:
+        res = cloudinary.uploader.upload(avatar) #Nó trả về một cái API (dữ liệu JSON)
+        u.avatar = res.get('secure_url') #Lấy thuộc tính url từ res
+    db.session.add(u)
+    db.session.commit()
+
 if __name__ == '__main__':  # Tự phát hiện cái bảng này chưa có và nó tạo ra
     with app.app_context():
-        print(check_benhnhan('0123456781'))
-
+        # print(dang_ky_kham(tenbn='Ngô Thừa Đạm', sdtbn='1234567882', emailbn='abc@123', sinhbn='2001-12-05', gioibn=0, trieuchungbn='Ho, sốt', bacsikhambn=1))
+        # print(load_bs(tenbs='Bác sĩ An'))
+        print(load_bstrucca(chuyennganh=''))
+        pass

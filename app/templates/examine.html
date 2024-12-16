@@ -15,91 +15,120 @@
 
 <div class="container-fluid p-3 mb-2 bg-light text-dark my-5 py-5">
     <div class="container py-5">
-        <form method="post" action="/register" enctype="multipart/form-data">
+        <!-- Form bắt đầu -->
+        <form method="post" action="/examine" enctype="multipart/form-data">
             <div class="row gx-5">
+                <!-- Cột bên trái -->
                 <div class="col-lg-6" style="margin-left: 20px;">
                     <div class="bg-white text-center rounded p-5">
                         <h1 class="mb-5 text-black">ĐẶT LỊCH HẸN</h1>
                         <div class="px-md-2">
+                            <!-- Kiểm tra Số điện thoại -->
                             <div class="row">
                                 <div class="col-12 d-flex align-items-center justify-content-center flex-wrap bg-info rounded p-2">
-                                    <label class="me-3 fw-bolder" for="bnphone">Nhập số điện thoại:</label>
-                                    <input class="form-control bg-light w-auto me-3" id="sdtcheck" maxlength="10" type="number">
-                                    <button class="btn btn-success px-3" id="sdtcheckbtn" onclick="checkSDT()">Kiểm tra</button>
+                                    <label class="me-3 fw-bolder" for="bnphone">Nhập số điện thoại*:</label>
+                                    <input
+                                            class="form-control bg-light w-auto me-3"
+                                            id="bnphone"
+                                            name="bnphone"
+                                            maxlength="10"
+                                            type="tel"
+                                            required
+                                            oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                                    <button class="btn btn-success px-3" id="sdtcheckbtn" onclick="checkSDT()"
+                                            type="button">Kiểm tra
+                                    </button>
                                 </div>
 
-                                    <!-- Div thông báo kết quả -->
-                                <div id="sdtstatus" class="text-center my-3" style="font-weight: bold;"></div>
+                                <!-- Div thông báo kết quả -->
+                                <div id="sdtstatus" class="text-center my-3">
+                                    {% if loi %}
+                                    <span class="{% if 'thành công' in loi %}message-success{% else %}message-error{% endif %}">{{ loi }}</span>
+                                    {% endif %}
+                                </div>
                             </div>
+
+                            <!-- Các thông tin cá nhân -->
                             <div class="row g-2">
 
+                                <!-- Họ và tên -->
                                 <div class="col-sm-12 text-start">
                                     <label class="form-label text-black" for="bnname">Họ và tên ∗</label>
                                     <input type="text" id="bnname" class="form-control bg-light" name="bnname" value=""
-                                           required="">
+                                           required>
                                 </div>
 
+                                <!-- Email -->
                                 <div class="col-sm-12 text-start">
                                     <label class="form-label text-black" for="bnemail">Email</label>
                                     <input type="email" id="bnemail" class="form-control bg-light" name="bnemail"
                                            value="">
                                 </div>
 
+                                <!-- Ngày sinh -->
                                 <div class="col-12 col-sm-6 text-start">
                                     <label for="bnsinh" class="form-label text-black">Ngày sinh ∗</label>
-                                    <input type="date" class="form-control datetimepicker-input bg-light"
-                                           id="bnsinh"
-                                           name="bnsinh" value="" required="">
+                                    <input type="date" class="form-control bg-light" id="bnsinh" name="bnsinh" value=""
+                                           required>
                                 </div>
 
+                                <!-- Giới tính -->
                                 <div class="col-12 col-sm-6 text-start ">
                                     <label class="form-label text-black" for="sex">Giới tính</label>
-                                    <div class="form-check ">
-                                        <input class="form-check-input" type="radio" name="bngioi" id="male" checked>
-                                        <label class="form-check-label" for="male">
-                                            Nam
-                                        </label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="bngioi" id="male"
+                                               value="False" checked>
+                                        <label class="form-check-label" for="male">Nam</label>
                                     </div>
                                     <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="bngioi" id="female">
-                                        <label class="form-check-label" for="female">
-                                            Nữ
-                                        </label>
+                                        <input class="form-check-input" type="radio" name="bngioi" id="female"
+                                               value="True">
+                                        <label class="form-check-label" for="female">Nữ</label>
                                     </div>
                                 </div>
 
+                                <!-- Triệu chứng -->
                                 <div class="col-sm-12 text-start">
                                     <label class="form-label text-black" for="bntrieuchung">Triệu chứng</label>
                                     <input type="text" id="bntrieuchung" class="form-control bg-light"
-                                           name="bntrieuchung"
-                                           value="">
+                                           name="bntrieuchung" value="">
                                 </div>
 
-
+                                <!-- Lịch khám -->
                                 <div class="text-start">
                                     <label for="bnlichkham" class="form-label text-black">Chọn lịch khám ∗</label>
                                     <table class="table">
                                         <thead>
                                         <tr>
                                             <th scope="col">Thứ</th>
-                                            {% for ngay in ngayconlai%}
-                                            <th scope="col">{{'CN' if ngay == 8 else ngay}}</th>
+                                            {% for ngay, _ in ngayconlai %}
+                                            <th scope="col">{{ 'CN' if ngay == 8 else ngay }}</th>
                                             {% endfor %}
-                                            <th scope="col">Ghi Chú</th>
                                         </tr>
                                         </thead>
                                         <tbody>
                                         <tr>
-                                            <th scope="row"></th>
-                                            {% for ngay in ngayconlai%}
-                                            <td><input type="radio" id="thu{{ngay}}" name="bnlichkham"></td>
+                                            <th scope="row">Ngày</th>
+                                            {% for _, ngay_cu_the in ngayconlai %}
+                                            <!--                                            YYYY-MM-DD lấy 2 ký tự cuối, 2 kí tự giữa-->
+                                            <td>{{ ngay_cu_the[8:10] }}/{{ ngay_cu_the[5:7] }}</td>
                                             {% endfor %}
-                                            <td> Những ô không được chọn là ngày đã full lịch</td>
+                                        </tr>
+                                        <tr>
+                                            <th scope="row">Chọn</th>
+                                            {% for ngay, ngay_cu_the in ngayconlai %}
+                                            <td>
+                                                <input type="radio" id="thu{{ ngay }}" name="bnngaykham"
+                                                       value="{{ ngay_cu_the }}" onchange="updateDoctorsTable()" required>
+                                            </td>
+                                            {% endfor %}
                                         </tr>
                                         </tbody>
                                     </table>
-                                </div>
+                                    <div class="form-text">*** Những ngày không thể chọn là những ngày đã đầy lịch</div>
 
+                                </div>
+                                <!-- Submit -->
                                 <div class="col-sm-2"></div>
                                 <div class="col-sm-6">
                                     <button class="btn btn-primary w-100 py-3" type="submit" style="margin-top: 20px;">
@@ -113,6 +142,8 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Cột bên phải -->
                 <div class="col-lg-5">
                     <div class="mb-5">
                         <h1 class="display-3 text-dark"><b>Tạo một phiếu hẹn cho cá nhân</b></h1>
@@ -120,13 +151,15 @@
                     <p class="text-dark mb-3">Bạn có thể được khám bệnh bởi bác sĩ mà mình mong muốn vào khung giờ
                         hẹn.</p>
 
+                    <!-- Chọn chuyên khoa và bác sĩ -->
                     <div class="d-flex justify-content-center">
                         <div class="text-start">
+                            <!-- Chọn chuyên khoa -->
                             <div class="d-flex align-items-center mb-2">
                                 <div class="fw-bold me-2">Chọn chuyên khoa:</div>
                                 <div>
                                     <select class="form-select" id="chuyennganhSelect"
-                                            onchange="updateDoctorsTable(this)">
+                                            onchange="updateDoctorsTable()">
                                         <option selected value="" class="chuyennganh-option">-- Chọn --</option>
                                         {% for cn in chuyennganhs %}
                                         <option value="{{ cn.id }}" class="chuyennganh-option">{{ cn.ten }}</option>
@@ -134,6 +167,8 @@
                                     </select>
                                 </div>
                             </div>
+
+                            <!-- Danh sách bác sĩ trực ca -->
                             <label for="bnbacsi" class="form-label text-black">Danh sách bác sĩ trực ca ∗</label>
                             <table class="table" id="doctorTable">
                                 <thead>
@@ -149,10 +184,11 @@
                                 {% for d in doctors %}
                                 <tr>
                                     <th scope="row">{{ loop.index }}</th>
-                                    <td>{{d[0]}}</td>
-                                    <td>{{d[1]}}</td>
-                                    <td>{{d[2]}}</td>
-                                    <td><input type="radio" name="bnbacsi"></td>
+                                    <td>{{ d[0] }}</td>
+                                    <td>{{ d[1] }}</td>
+                                    <td>{{ d[2] }}</td>
+                                    <td><input type="radio" name="bnbacsi_giokham" value="{{ d[0] }}|{{ d[3] }}"
+                                               required></td>
                                 </tr>
                                 {% endfor %}
                                 </tbody>
@@ -161,8 +197,8 @@
                     </div>
                 </div>
             </div>
-
         </form>
+        <!-- Form kết thúc -->
     </div>
 </div>
 </body>

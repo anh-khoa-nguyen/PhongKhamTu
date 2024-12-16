@@ -1,3 +1,5 @@
+import datetime
+
 from flask import render_template, request, redirect, session, jsonify
 from app import app, login
 
@@ -5,62 +7,148 @@ import dao, json
 from flask_login import login_user, logout_user #Ghi nhận trạng thái login, logout của session (Một phiên)
 
 from app.dao import count_so_phan_tu
-from app.models import ChuyenNganh
+from app.models import ChuyenNganh, User
 
 
-@app.route("/")
+@app.route("/", methods=['GET','POST'])
 def index():
-    return render_template('index.html')
+    err_msg = None
+    if request.method.__eq__('POST'):
+        ten = request.form.get('name')
+        nghenghiep = request.form.get('nghenghiep')
+        binhluan = request.form.get('binhluan')
+        avatar = request.files.get('avatar')
+        star_value = request.form.get('rating')
+        #
+        # import pdb
+        # pdb.set_trace()
 
-@app.route("/examine", methods=['GET','POST'])
+        dao.add_comment(avatar=avatar, ten=ten, nghenghiep=nghenghiep, binhluan=binhluan, star_value=star_value)
+
+        if not ten or not nghenghiep or not binhluan:
+            err_msg = 'Vui lòng nhập đầy đủ thông tin bắt buộc'
+        else:
+            err_msg = 'Những đánh giá của bạn là động lực cho chúng tôi'
+    return render_template('index.html', binhluan = dao.load_comments())
+
+@app.route("/examine", methods=['GET', 'POST'])
 def examine():
-    if request.method.__eq__('POST'): #Kiểm tra xem request gửi lên là get hay post
-        tenbn = request.form.get('bnname')
-        sdtbn = request.form.get('bnphone')
-        emailbn = request.form.get('bnemail')
-        sinhbn = request.form.get('bnsinh')
-        gioibn = request.form.get('bngioi')
-        trieuchungbn = request.form.get('bntrieuchung')
-        lichkhambn = request.form.get('bnlichkham')
+    err_msg = None
+    try:
+        if request.method.__eq__('POST'):  # Kiểm tra nếu form gửi POST
+            tenbn = request.form.get('bnname')  # Lấy họ tên
+            sdtbn = str(request.form.get('bnphone'))  # Lấy số điện thoại
+            emailbn = request.form.get('bnemail')  # Email (không bắt buộc)
+            sinhbn = request.form.get('bnsinh')  # Ngày sinh
+            gioibn = request.form.get('bngioi')  # Giới tính
+            gioibn = gioibn == 'True'
+            trieuchungbn = request.form.get('bntrieuchung')  # Triệu chứng
+            ngaykhambn = request.form.get('bnngaykham')  # Lịch khám (chọn radio button)
+            tenbs_giokhambn = request.form.get('bnbacsi_giokham')
+            tenbs, giokhambn = tenbs_giokhambn.split('|')
+            bacsikhambn = (dao.load_bs(tenbs=tenbs))[0].id
 
+            # Kiểm tra thông tin bắt buộc
+            if not tenbn or not sdtbn or not sinhbn or not ngaykhambn or not bacsikhambn:
+                err_msg = 'Vui lòng nhập đầy đủ thông tin bắt buộc'
+            elif len(sdtbn) != 10 or not sdtbn.isdigit():  # Kiểm tra số điện thoại đủ 10 số và chỉ chứa số
+                err_msg = 'Số điện thoại phải chứa đúng 10 chữ số'
+            else:
+                # Gọi hàm của DAO để xử lý logic đăng ký lịch khám
+                dao.dang_ky_kham(
+                    tenbn=tenbn,
+                    sdtbn=sdtbn,
+                    emailbn=emailbn,
+                    sinhbn=sinhbn,
+                    gioibn=gioibn,
+                    trieuchungbn=trieuchungbn,
+                    bacsikhambn=bacsikhambn,
+                    giokhambn=giokhambn,
+                    ngaykhambn=ngaykhambn
+                )
+                err_msg = 'Đăng ký lịch khám thành công'
+
+    except Exception as e:
+        err_msg = f'Có lỗi xảy ra: {str(e)}'
+
+    # Dữ liệu cần thiết để render form
     ngaycls = dao.get_remaining_days()
     cns = dao.load_object(ChuyenNganh)
     doctors = dao.load_bstrucca()
-    return render_template('examine.html', chuyennganhs = cns, ngayconlai = ngaycls, doctors = doctors)
 
-@app.route("/api/doctors/<chuyennganh>", methods=['POST'])
-def api_doctors(chuyennganh):
+    return render_template('examine.html', chuyennganhs=cns, ngayconlai=ngaycls, doctors=doctors, loi=err_msg)
+
+# @app.route("/api/doctors/<chuyennganh>", methods=['POST'])
+# def api_doctors(chuyennganh):
+#     try:
+#         doctors = dao.load_bstrucca(int(chuyennganh))
+#
+#         # Chuyển đổi các đối tượng Row thành dictionary có thể tuần tự hóa JSON
+#         doctors_list = []
+#         for doctor in doctors:
+#             doctors_list.append({
+#                 "ten": doctor[0],
+#                 "chuyennganh": doctor[1],
+#                 "khoangthoigian": doctor[2],
+#                 "khunggioid": doctor[3]
+#             })
+#
+#         # Trả về kết quả chuỗi JSON hợp lệ
+#         return jsonify(doctors_list), 200
+#
+#     except Exception as e:
+#         print(f"[ERROR] Server error in api_doctors: {e}")  # Log chi tiết lỗi
+#         return jsonify({"error": "Server error occurred", "details": str(e)}), 500
+
+@app.route('/api/filter_doctors', methods=['POST'])
+def filter_doctors():
     try:
-        doctors = dao.load_bstrucca(int(chuyennganh))
+        request_data = request.get_json()
+        ngay = request_data.get('ngay')  # Ngày khám
+        chuyennganh = request_data.get('chuyennganh')  # Chuyên ngành
 
-        # Chuyển đổi các đối tượng Row thành dictionary có thể tuần tự hóa JSON
+        # Gọi hàm load_bstrucca để lấy danh sách bác sĩ
+        doctors = dao.load_bstrucca(
+            chuyennganh=int(chuyennganh) if chuyennganh else None,  # Nếu chuyennganh có thì chuyển thành số
+            ngay=datetime.datetime.strptime(ngay, '%Y-%m-%d') if ngay else datetime.date.today()
+        )
+
+        # Chuẩn bị dữ liệu trả về
         doctors_list = []
         for doctor in doctors:
             doctors_list.append({
-                "ten": doctor[0],
-                "chuyennganh": doctor[1],
-                "khoangthoigian": doctor[2],
+                "ten": doctor.bacsi_ten,
+                "chuyennganh": doctor.chuyennganh_ten,
+                "khoangthoigian": doctor.khunggio_ten,
+                "khunggioid": doctor.khunggio_id
             })
 
-        # Trả về kết quả chuỗi JSON hợp lệ
-        return jsonify(doctors_list), 200
+        return jsonify(doctors_list), 200  # Trả về danh sách JSON với mã trạng thái OK
 
     except Exception as e:
-        print(f"[ERROR] Server error in api_doctors: {e}")  # Log chi tiết lỗi
-        return jsonify({"error": "Server error occurred", "details": str(e)}), 500
+        print(f'Lỗi khi xử lý filter_doctors: {e}')
+        return jsonify({"error": "Lỗi khi xử lý filter_doctors", "details": str(e)}), 500
+
 
 @app.route('/api/checksdt/<sdt>', methods=['POST'])
 def api_check_sdt(sdt):
     try:
-        # Kiểm tra thông tin bệnh nhân
+        # Kiểm tra độ dài số điện thoại
+        if len(sdt) < 10:
+            return jsonify({
+                "error": "Bạn nhập chưa đủ 10 số"
+            }), 400  # Trả về mã HTTP 400 (Bad Request)
+
+        # Nếu số điện thoại hợp lệ (10 số hoặc hơn), thực hiện logic kiểm tra
         result, patient_info = dao.check_benhnhan(str(sdt))
-        return {
+
+        return jsonify({
             "result": result,
             "patient_info": patient_info
-        }
+        }), 200  # Trả về mã HTTP 200 (OK)
 
     except Exception as e:
-        return {"error": str(e)}, 500
+        return jsonify({"error": str(e)}), 500  # Trả về mã HTTP 500 nếu có lỗi khác
 
 @app.route("/login", methods=['GET', 'POST'])
 def login_process():
