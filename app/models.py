@@ -14,7 +14,7 @@ class UserRole(RoleEnum):  # Chỉ là định nghĩa enum.
     YTA = 3
     THUNGAN = 4
 
-class User(db.Model):
+class User(db.Model, UserMixin):
     id = Column(Integer, primary_key=True, autoincrement=True)
     ten = Column(String(50))  # Không trùng lắp giữa các thể hiện
     ngaythamgia = Column(DateTime, default=datetime.datetime.now())

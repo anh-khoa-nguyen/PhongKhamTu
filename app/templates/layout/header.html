@@ -11,17 +11,32 @@
                 <a class="nav-link" href="/examine">Đăng kí lịch khám</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="#">Phản hồi</a>
+                <a class="nav-link" href="#phanhoi">Phản hồi</a>
             </li>
 
+            {% if current_user.is_authenticated %}
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle align-items-center" href="#" role="button" data-bs-toggle="dropdown">
+                    <img src="{{current_user.avatar}}" width="25" class="rounded-circle">
+                    Chào {{ current_user.username }}
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li style="right: 0;"><a class="dropdown-item" href="#">Tài khoản</a></li>
+                    <li style="right: 0;"><a class="dropdown-item" href="/logout">Đăng xuất</a></li>
+                </ul>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link" href="#">Quyền: {{ current_user.vaitro }}</a>
+            </li>
+            {% else %}
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle align-items-center" href="#" role="button" data-bs-toggle="dropdown"><i class="fa-solid fa-user"></i></a>
                 <ul class="dropdown-menu dropdown-menu-end">
                     <li style="right: 0;"><a class="dropdown-item" href="/login">Đăng nhập</a></li>
-                    <li style="right: 0;"><a class="dropdown-item" href="#">Tài khoản</a></li>
-                    <li style="right: 0;"><a class="dropdown-item" href="#">Đăng xuất</a></li>
                 </ul>
             </li>
+            {% endif %}
 
         </ul>
     </div>
