@@ -21,9 +21,19 @@ def login_process():
         u = dao.auth_user(username = username, password = password)
         if u:
             login_user(u)
-            return redirect('/') #Điều hướng
+            return redirect('/admin') #Điều hướng
 
     return render_template('login.html') #Get là dùng để truy cập vào trang, post thì sẽ xử lý login, đây là phản hồi về template
+
+@app.route('/login-admin', methods=['post'])
+def login_admin_process():
+    username = request.form.get('username')
+    password = request.form.get('password')
+    u = dao.auth_user(username=username, password=password)
+    if u:
+        login_user(u)
+
+    return redirect('/admin')  # Điều hướng
 
 @app.route("/logout")
 def logout_process():

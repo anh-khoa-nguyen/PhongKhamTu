@@ -1,0 +1,67 @@
+{% extends 'admin/master.html' %}
+
+{% block body %}
+{% if current_user.is_authenticated %}
+<h1>Chào {{ current_user.username }}</h1>
+{% else %}
+<div class="container py-5 h-100">
+    <div class="row d-flex justify-content-center align-items-center h-100">
+        <div class="col-lg-8 col-xl-6">
+            <div class="card rounded-3">
+                <img src="{{ url_for('static', filename='images/login/banner.png') }}" class="w-100"
+                     style="border-top-left-radius: .3rem; border-top-right-radius: .3rem;" alt="Sample photo">
+                <div class="card-body p-4 p-md-5">
+                    <div class="container">
+                        <div class="row justify-content-center align-items-center">
+                            <div class="col-auto">
+                                <h3 class="mb-4 pb-2 pb-md-0 mb-md-5 px-md-2">Đăng nhập</h3>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <form class="px-md-2" action="/login-admin" method="POST">
+                        <div class="form-floating mb-4 form-floating">
+                            <input type="text" id="username" class="form-control" name="username" value=""
+                                   placeholder="Username" required="">
+                            <label class="form-label" for="username">Username</label>
+                        </div>
+
+                        <p class="text-danger d-none">Username không tồn tại</p>
+
+                        <div class="form-floating mb-4 form-floating">
+                            <input type="password" id="password" class="form-control" value="" name="password"
+                                   placeholder="Mật khẩu" required="">
+                            <label class="form-label" for="password">Mật khẩu</label>
+                        </div>
+
+                        <p class="text-danger d-none">Mật khẩu không chính xác</p>
+
+                        <div class="form-group mb-4">
+                            <label>Đăng nhập với tư cách: </label>
+                            <select class="form-select form-inline" aria-label="Default select example" name="role">
+                                <option value="patient" selected="">Admin</option>
+                                <option value="doctor">Bác sĩ</option>
+                                <option value="nurse" selecnted="">Y tá</option>
+                                <option value="cashier">Thu ngân</option>
+                            </select>
+                        </div>
+                        <div class="container">
+                            <div class="row justify-content-center align-items-center">
+                                <div class="col-auto">
+                                    <button type="submit" class="btn btn-success btn-lg mb-4 btn-primary">Đăng nhập
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!--              <p class="mb-1" style="color: #000;">Bạn chưa có tài khoản? Đăng ký tại <a href="/dang-ky-tai-khoan" style="color: rgb(0, 102, 255);">đây</a></p>-->
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

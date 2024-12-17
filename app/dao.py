@@ -8,6 +8,7 @@ def auth_user(username, password):
     u = User.query.filter(User.username.__eq__(username),
                              User.password.__eq__(password))
 
+
     return u.first()
 
 def get_user_by_id(user_id):
