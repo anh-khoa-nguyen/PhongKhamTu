@@ -2,7 +2,96 @@
 
 {% block body %}
 {% if current_user.is_authenticated %}
-<h1>Chào {{ current_user.username }}</h1>
+
+<div class="row">
+    <div class="col">
+        <nav aria-label="breadcrumb" class="bg-light rounded-3 p-3 mb-4">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="/">Trang chủ</a></li>
+                <li class="breadcrumb-item"><a href="/tai-khoan">Tài khoản</a></li>
+            </ol>
+        </nav>
+    </div>
+</div>
+<div class="row">
+    <div class="col-lg-4">
+        <div class="card mb-4">
+            <div class="card-body text-center">
+                <img src="{{current_user.avatar}}" alt="avatar" class="rounded-circle img-fluid" style="width: 150px;">
+                <h5 class="my-3"></h5>
+                <p class="text-muted mb-1">@{{current_user.username}}</p>
+                <p class="text-muted mb-4">{{current_user.ten}}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-sm-3">
+                        <p class="mb-0">Họ tên</p>
+                    </div>
+                    <div class="col-sm-9">
+                        <p class="text-muted mb-0">{{current_user.ten}}</p>
+                    </div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="col-sm-3">
+                        <p class="mb-0">Giới tính</p>
+                    </div>
+                    <div class="col-sm-9">
+                        <p class="text-muted mb-0">Nam</p>
+                    </div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="col-sm-3">
+                        <p class="mb-0">Học vị</p>
+                    </div>
+                    <div class="col-sm-9">
+                        <p class="text-muted mb-0">
+                            {% if current_user.vaitro|string == 'UserRole.ADMIN' %}
+                            ADMIN
+                            {% elif current_user.vaitro|string == 'UserRole.BACSI' %}
+                            Bác sĩ
+                            {% elif current_user.vaitro|string == 'UserRole.YTA' %}
+                            Y tá
+                            {% else %}
+                            {{ current_user.vaitro }}
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="col-sm-3">
+                        <p class="mb-0">Chuyên khoa</p>
+                    </div>
+                    <div class="col-sm-9">
+                        <p class="text-muted mb-0">{{current_user.chuyenkhoa}}</p>
+                    </div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="col-sm-3">
+                        <p class="mb-0">Điện thoại</p>
+                    </div>
+                    <div class="col-sm-9">
+                        <p class="text-muted mb-0">{{current_user.sdt}}</p>
+                    </div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="col-sm-3">
+                        {% set search_url = "https://www.google.com/search?q=Bác sĩ " + current_user.ten %}
+                        <p class="mb-0"><a href="{{ search_url }}" target="_blank">Tìm hiểu thêm</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% else %}
 <div class="container py-5 h-100">
     <div class="row d-flex justify-content-center align-items-center h-100">

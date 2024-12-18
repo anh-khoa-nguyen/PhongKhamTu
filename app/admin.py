@@ -81,8 +81,6 @@ class LogoutView(BaseView):
         return current_user.is_authenticated
 admin.add_view(LogoutView(name='Đăng xuất'))
 
-
-
 admin.add_view(UserView(User, db.session)) #Muốn chèn được dữ liệu phải có cái session xử lý chèn dữ liệu
 admin.add_view(QLThuocView(Thuoc,db.session))
 admin.add_view(QLLoaiThuocView(LoaiThuoc,db.session))

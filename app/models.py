@@ -23,6 +23,8 @@ class User(db.Model, UserMixin):
     password = Column(String(50), nullable=False)
     avatar = Column(String(100),
                     default='https://res.cloudinary.com/dxxwcby8l/image/upload/v1647056401/ipmsmnxjydrhpo21xrd8.jpg')
+    sdt = Column(String(10), nullable=False, unique=True)
+    chuyenkhoa = Column(String(30))
     vaitro = Column(Enum(UserRole))
     danhsachkhams = relationship('DanhSachKham', backref='user',
                                   lazy=True)
@@ -151,15 +153,15 @@ if __name__ == '__main__':  # Tự phát hiện cái bảng này chưa có và n
 
         u1 = User(ten='Bác sĩ An', username='bsan', password=str(hashlib.md5('123456'.encode('utf-8')).hexdigest())
                   # Encode phòng trường hợp mật khẩu có dấu TV, ép toàn bộ thành chụỗi
-                  , vaitro=UserRole.BACSI, email="bsan@gmail.com")
+                  , vaitro=UserRole.BACSI, email="bsan@gmail.com", sdt='0123456781', chuyenkhoa='Nhi đa khoa')
 
         u2 = User(ten='Y tá Dâu', username='ytadau', password=str(hashlib.md5('123456'.encode('utf-8')).hexdigest())
                   # Encode phòng trường hợp mật khẩu có dấu TV, ép toàn bộ thành chụỗi
-                  , vaitro=UserRole.YTA, email="ytadau@gmail.com")
+                  , vaitro=UserRole.YTA, email="ytadau@gmail.com", sdt='0123456782', chuyenkhoa='Ngoại lồng ngực')
 
         u3 = User(ten='Thu ngân OU', username='thunganou', password=str(hashlib.md5('123456'.encode('utf-8')).hexdigest())
                   # Encode phòng trường hợp mật khẩu có dấu TV, ép toàn bộ thành chụỗi
-                  , vaitro=UserRole.THUNGAN, email="thunganou@gmail.com")
+                  , vaitro=UserRole.THUNGAN, email="thunganou@gmail.com", sdt='0123456783', chuyenkhoa='Răng - hàm - mặt')
 
         db.session.add_all([u,u1,u2,u3])
         db.session.commit()
