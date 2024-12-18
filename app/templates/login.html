@@ -1,7 +1,9 @@
 {% extends 'layout/base.html' %}
 
 {% block content %}
-
+{% if error %}
+<div class="alert alert-danger mt-2">{{ error}}</div>
+{% endif %}
 <div class="container py-5 h-100">
     <div class="row d-flex justify-content-center align-items-center h-100">
         <div class="col-lg-8 col-xl-6">
@@ -38,10 +40,10 @@
                         <div class="form-group mb-4">
                             <label>Đăng nhập với tư cách: </label>
                             <select class="form-select form-inline" aria-label="Default select example" name="role">
-                                <option value="patient" selected="">Admin</option>
-                                <option value="doctor">Bác sĩ</option>
-                                <option value="nurse" selected="">Y tá</option>
-                                <option value="cashier">Thu ngân</option>
+                                <option value="ADMIN" selected="">Admin</option>
+                                <option value="BACSI">Bác sĩ</option>
+                                <option value="YTA" >Y tá</option>
+                                <option value="THUNGAN">Thu ngân</option>
                             </select>
                         </div>
                         <div class="container">

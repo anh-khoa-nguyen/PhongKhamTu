@@ -44,19 +44,24 @@ admin.add_view(LDSKView(name='Lập danh sách khám'))
 
 #View của Thu ngân:
 class TTHDView(TNView):
-    @expose('/')
+    @expose('/', methods=['get', 'post'])
     def index(self):
+        if request.method.__eq__('POST'):
+            date = request.form.get('datepicker')
 
-        hds = dao.load_hoadon()
         page = request.args.get('page', 1)  # Lấy page ra, mặc định không gửi lấy số 1
         so_phan_tu = app.config['SO_PHAN_TU']
         total = dao.count_so_phan_tu(HoaDon)
+        hds = dao.load_hoadon(int(page))
+
+
         return self.render('admin/hoadon.html', hoadons = hds, pages = math.ceil(total/so_phan_tu))
 admin.add_view(TTHDView(name='Thanh toán hóa đơn'))
 
 #View của Admin:
 class UserView(AdminView):
-        column_list = ['id', 'ten', 'username', 'password']
+    column_list = ['id', 'ten', 'username', 'password']
+
 
 class QLThuocView(AdminView):
     pass

@@ -13,27 +13,84 @@ def index():
 def examine():
     return render_template('examine.html')
 
-@app.route("/login", methods=['get', 'post']) #Đường dẫn web login, mặc định chỉ đang nhận 'get', không nhận 'post'
+@app.route("/login", methods=['GET', 'POST'])
 def login_process():
-    if request.method.__eq__('POST'): #Kiểm tra xem request gửi lên là get hay post
+    error=None
+    if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
-        u = dao.auth_user(username = username, password = password)
+        role = request.form.get('role')
+
+        if not username or not password:
+            error = "Username and password are required."
+            return render_template('login.html', error=error)
+
+        role = role.upper()
+
+        # Xác thực người dùng và lấy thông tin vai trò
+        u = dao.auth_user(username=username, password=password,role=role)
         if u:
             login_user(u)
-            return redirect('/admin') #Điều hướng
 
-    return render_template('login.html') #Get là dùng để truy cập vào trang, post thì sẽ xử lý login, đây là phản hồi về template
+            # Điều hướng dựa trên vai trò
+            if role == 'ADMIN':
+                return redirect('/admin')
+            elif role == 'BACSI':
+                return redirect('/admin')
+            elif role == 'YTA':
+                return redirect('/admin')
+            elif role == 'THUNGAN':
+                return redirect('/admin')
+            else:
+                return redirect('/')  # Trang mặc định nếu vai trò không khớp
+        else:
+            error = "Tên đăng nhập, mật khẩu hoặc vai trò không đúng."
+            return render_template('login.html', error=error)
+
+    return render_template('login.html')
 
 @app.route('/login-admin', methods=['post'])
 def login_admin_process():
-    username = request.form.get('username')
-    password = request.form.get('password')
-    u = dao.auth_user(username=username, password=password)
-    if u:
-        login_user(u)
+    # username = request.form.get('username')
+    # password = request.form.get('password')
+    # u = dao.auth_user(username=username, password=password)
+    # if u:
+    #     login_user(u)
+    #
+    # return redirect('/admin')  # Điều hướng
+    error = None
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        role = request.form.get('role')
 
-    return redirect('/admin')  # Điều hướng
+        if not username or not password:
+            error = "Username and password are required."
+            return render_template('login.html', error=error)
+
+        role = role.upper()
+
+        # Xác thực người dùng và lấy thông tin vai trò
+        u = dao.auth_user(username=username, password=password, role=role)
+        if u:
+            login_user(u)
+
+            # Điều hướng dựa trên vai trò
+            if role == 'ADMIN':
+                return redirect('/admin')
+            elif role == 'BACSI':
+                return redirect('/admin')
+            elif role == 'YTA':
+                return redirect('/admin')
+            elif role == 'THUNGAN':
+                return redirect('/admin')
+            else:
+                return redirect('/')  # Trang mặc định nếu vai trò không khớp
+        else:
+            error = "Tên đăng nhập, mật khẩu hoặc vai trò không đúng."
+            return render_template('login.html', error=error)
+
+    return render_template('login.html')
 
 @app.route("/logout")
 def logout_process():
