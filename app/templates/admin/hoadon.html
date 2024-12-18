@@ -1,0 +1,149 @@
+{% extends 'admin/master.html' %}
+
+{% block body %}
+{% if current_user.is_authenticated %}
+<div class="container mb-5 mt-3">
+    <div class="row d-flex align-items-baseline">
+        <div class="col-xl-9">
+            <p style="color: #7e8d9f;font-size: 20px;">THANH TOÁN HÓA ĐƠN
+            </p>
+        </div>
+        <div class="col-xl-3 float-end">
+            <div class="font-weight-bold font-italic">Phòng khám MIYEK</div>
+        </div>
+        <hr>
+    </div>
+
+    <div class="container">
+        <div class="col-md-12">
+            <div class="text-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                     class="bi bi-file-medical" viewBox="0 0 16 16">
+                    <path d="M8.5 4.5a.5.5 0 0 0-1 0v.634l-.549-.317a.5.5 0 1 0-.5.866L7 6l-.549.317a.5.5 0 1 0 .5.866l.549-.317V7.5a.5.5 0 1 0 1 0v-.634l.549.317a.5.5 0 1 0 .5-.866L9 6l.549-.317a.5.5 0 1 0-.5-.866l-.549.317V4.5zM5.5 9a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1h-5zm0 2a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1h-5z"></path>
+                    <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2zm10-1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1z"></path>
+                </svg>
+                <p class="pt-0 font-weight-bold">Chọn ngày:</p>
+                <div class="justify-content-center d-flex center">
+                    <input type="date" data-date="" data-date-format="DD MMMM YYYY" value="2015-08-09">
+                    <button class="btn btn-primary ml-3">Chọn</button>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="row">
+            <div class="col-xl-8">
+            </div>
+            <div class="col-xl-4">
+
+            </div>
+        </div>
+
+        <div class="row my-2 mx-1 justify-content-center">
+            <table class="table table-striped table-borderless auto-index">
+                <thead style="background-color:#84B0CA ;" class="text-white">
+                <tr>
+                    <th scope="col" class="text-center">STT</th>
+                    <th scope="col" class="text-center">Ngày khám</th>
+                    <th scope="col" class="text-center">Họ tên</th>
+                    <th scope="col" class="text-center">Giới tính</th>
+                    <th scope="col" class="text-center">Ngày sinh</th>
+                    <th scope="col" class="text-center">Số tiền</th>
+                    <th scope="col" class="text-center">Thanh toán</th>
+                    <!--                    <th scope="col" class="text-center"></th>-->
+                </tr>
+                </thead>
+                <tbody>
+                {% for h, p, b, u in hoadons %}
+                <tr>
+                    <td>{{h.id}}</td>
+                    <td>{{p.ngaykham}}</td>
+                    <td>{{b.ten}}</td>
+                    <td>{{b.gioitinh}}</td>
+                    <td>{{b.ngaysinh}}</td>
+                    <td>{{h.value}}</td>
+                    <td>
+                        {% if h.isThanhtoan == 0 %}
+                        <button class="d-flex justify-content-center btn btn-danger" data-toggle="modal"
+                                data-target="#exampleModal">CHƯA THANH TOÁN
+                        </button>
+                        {% else %}
+                        <button class="d-flex justify-content-center btn btn-success" data-toggle="modal"
+                                data-target="#exampleModal">ĐÃ THANH TOÁN
+                        </button>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+
+            <ul class="pagination mt-3">
+                {% for i in range (1, pages+1)%}
+                <li class="page-item"><a class="page-link" href="?page={{i}}">{{i}}</a></li>
+                {% endfor %}
+            </ul>
+            <!-- Modal -->
+            <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+                 aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Chi tiết hóa đơn</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body row d-flex align-items-baseline">
+                            <div class="col-xl-6">
+                                <div class="form-group">
+                                    <label>Mã hóa đơn:</label>
+                                    <input type="" class="form-control w-100" disabled>
+                                </div>
+                                <div class="form-group">
+                                    <label>Tên khách hàng:</label>
+                                    <input type="" class="form-control w-100" disabled>
+                                </div>
+                                <div class="form-group">
+                                    <label>Số điện thoại:</label>
+                                    <input type="" class="form-control w-100" disabled>
+                                </div>
+                            </div>
+                            <div class="col-xl-6">
+                                <div class="form-group">
+                                    <label>Tổng hóa đơn:</label>
+                                    <input type="" class="form-control w-100" disabled>
+                                </div>
+                                <div class="form-group">
+                                    <label>Ngày sinh:</label>
+                                    <input type="" class="form-control w-100" disabled>
+                                </div>
+                                <div class="form-group">
+                                    <label>Ngày khám:</label>
+                                    <input type="" class="form-control w-100" disabled>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <div class="col-xl-9 d-flex justify-content-center">
+                                <button type="button" class="btn btn-secondary mr-4" data-dismiss="modal">Thanh toán tại
+                                    quầy
+                                </button>
+                                <button type="button" class="btn btn-primary">Thanh toán qua MOMO</button>
+                            </div>
+                            <div class="col-xl-3 d-flex justify-content-end">
+                                <button type="button" class="btn btn-secondary mr-2" data-dismiss="modal">Thoát</button>
+                                <button type="button" class="btn btn-primary">Lưu</button>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+{% endif %}
+{% endblock %}

@@ -1,10 +1,13 @@
-from app.models import User, UserRole, Thuoc, LoaiThuoc, DichVu
+import math
+
+from app.models import User, UserRole, Thuoc, LoaiThuoc, DichVu, HoaDon
 from flask_admin import Admin, BaseView, expose #View bình thường gọi là BaseView
 from app import app, db #Chèn db để thêm xóa sửa db
 from flask_admin.contrib.sqla import ModelView #Quản trị thằng nào đó thì import thằng đó vào, Model-View gắn liền với 1 view - 1 model,
 from flask_login import current_user, logout_user #Biến này ngoài View thì sài thoải mái nhưng trong phương thức thì phải import
-from flask import redirect #Redirect về trang chủ quản trị sau khi đã Logout
+from flask import request, redirect #Redirect về trang chủ quản trị sau khi đã Logout
 
+import dao
 admin = Admin(app=app, name='Phòng Khám Tư', template_mode='bootstrap4') #Đầu tiên luôn chèn cái app vào cho nó, tiếp theo là cái tên Website,
 #Cài thư viện nó trong .venv --> Lib
 
@@ -43,7 +46,12 @@ admin.add_view(LDSKView(name='Lập danh sách khám'))
 class TTHDView(TNView):
     @expose('/')
     def index(self):
-        return self.render('admin/hoadon.html')
+
+        hds = dao.load_hoadon()
+        page = request.args.get('page', 1)  # Lấy page ra, mặc định không gửi lấy số 1
+        so_phan_tu = app.config['SO_PHAN_TU']
+        total = dao.count_so_phan_tu(HoaDon)
+        return self.render('admin/hoadon.html', hoadons = hds, pages = math.ceil(total/so_phan_tu))
 admin.add_view(TTHDView(name='Thanh toán hóa đơn'))
 
 #View của Admin:
