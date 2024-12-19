@@ -31,22 +31,46 @@ def get_user_by_id(user_id):
 def load_hoadon(page = 1, date = datetime.date.today()):  # Load danh mục sản phẩm
     # query = db.session.query(HoaDon, PhieuKhamBenh, User).select_from(HoaDon).join(PhieuKhamBenh).join(User)
     # if date:
-        # query = query.filter(HoaDon. == cate_id)
+    #     query = query.filter(HoaDon. == cate_id)
 
     query = db.session.query(
-        HoaDon, PhieuKhamBenh, BenhNhan, User
+        HoaDon.id.label('hoadon_id'),
+        HoaDon.value.label('hoadon_value'),
+        HoaDon.isThanhtoan.label('hoadon_isThanhtoan'),
+        BenhNhan.ten.label('benhnhan_ten'),
+        BenhNhan.sdt.label('benhnhan_sdt'),
+        BenhNhan.gioitinh.label('benhnhan_gioitinh'),
+        BenhNhan.ngaysinh.label('benhnhan_ngaysinh'),
+        PhieuKhamBenh.ngaykham.label('phieukham_ngaykham')
     ).select_from(HoaDon) \
         .join(PhieuKhamBenh, HoaDon.phieukhambenh_id == PhieuKhamBenh.id) \
         .join(BenhNhan, PhieuKhamBenh.benhnhan_id == BenhNhan.id) \
         .join(User, HoaDon.user_id == User.id) \
         .order_by(HoaDon.id)
 
-
-
-
     query = so_phan_tu(page, query)
 
-    return query.all()
+    result = [
+        {
+            "id": hoadon_id,
+            "ten": benhnhan_ten,
+            "sdt": benhnhan_sdt,
+            "gioitinh": benhnhan_gioitinh,
+            "value": hoadon_value,
+            "isThanhtoan": hoadon_isThanhtoan,
+            "ngaysinh": benhnhan_ngaysinh,
+            "ngaykham": phieukham_ngaykham
+        }
+        for
+        hoadon_id, hoadon_value, hoadon_isThanhtoan, benhnhan_ten, benhnhan_sdt, benhnhan_gioitinh, benhnhan_ngaysinh, phieukham_ngaykham
+        in query.all()
+    ]
+
+    return result
+
+def tim_hoadon(hoadonid):
+    query = HoaDon.query.filter(HoaDon.id == hoadonid)
+    return query.first()
 
 def load_phieukhambenh():
     query = db.session.query(PhieuKhamBenh, BenhNhan, User).select_from(PhieuKhamBenh).join(BenhNhan).join(User)

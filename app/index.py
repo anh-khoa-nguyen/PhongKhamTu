@@ -49,6 +49,7 @@ def login_process():
 
     return render_template('login.html')
 
+
 @app.route('/login-admin', methods=['post'])
 def login_admin_process():
     # username = request.form.get('username')

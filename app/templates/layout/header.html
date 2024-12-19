@@ -2,9 +2,12 @@
 
     <div class="container-fluid">
         <a class="navbar-brand" href="/">
-            <img src="url_for('static', filename='images/index/bacsi.jpg')" style="width:40px;"
+            <div class="d-flex justify-content-between align-items-center">
+                <img src="{{ url_for('static', filename='images/base/logo.png')}}" style="width:40px;"
                  alt="">
-            Phòng Khám MIYEK</a>
+            <div class="ms-2">Phòng Khám MIYEK</div>
+            </div>
+            </a>
         <!-- Links -->
         <ul class="navbar-nav">
             <li class="nav-item">

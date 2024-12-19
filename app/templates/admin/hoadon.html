@@ -56,26 +56,41 @@
                 </tr>
                 </thead>
                 <tbody>
-                {% for h, p, b, u in hoadons %}
+                {% for h in hoadons %}
                 <tr>
                     <td>{{h.id}}</td>
-                    <td>{{p.ngaykham}}</td>
-                    <td>{{b.ten}}</td>
-                    <td>{{b.gioitinh}}</td>
-                    <td>{{b.ngaysinh}}</td>
+                    <td>{{h.ngaykham}}</td>
+                    <td>{{h.ten}}</td>
+                    <td>{% if h.gioitinh == 0 %} Nam {% else %} Nữ {% endif %}</td>
+                    <td>{{h.ngaysinh}}</td>
                     <td>{{h.value}}</td>
                     <td>
                         {% if h.isThanhtoan == 0 %}
-                        <button class="d-flex justify-content-center btn btn-danger" data-toggle="modal"
-                                data-target="#exampleModal"><a class="d-flex justify-content-center btn btn-danger"
-                                                               href="?benhnhan={{h.id}}">CHƯA THANH TOÁN</a>
+                        <button
+                                class="d-flex justify-content-center btn btn-danger thanh-toan-btn"
+                                data-toggle="modal"
+                                data-target="#exampleModal"
+                                data-id="{{ h.id }}"
+                                data-ten="{{ h.ten }}"
+                                data-sdt="{{ h.sdt }}"
+                                data-value="{{ h.value }}"
+                                data-ngaysinh="{{ h.ngaysinh }}"
+                                data-ngaykham="{{ h.ngaykham }}">
+                            CHƯA THANH TOÁN
                         </button>
                         {% else %}
-                        <div data-toggle="modal" data-target="#exampleModal" id="idForm">
-                            <a class="d-flex justify-content-center btn btn-success"
-                            href="?benhnhan={{h.id}}">ĐÃ THANH TOÁN</a>
-                        </div>
+                        <button
+                                class="d-flex justify-content-center btn btn-success thanh-toan-btn"
+                                data-id="{{h.id}}"
+                                data-ten="{{h.ten}}"
+                                data-sdt="{{h.sdt}}"
+                                data-value="{{h.value}}"
+                                data-ngaysinh="{{h.ngaysinh}}"
+                                data-ngaykham="{{h.ngaykham}}">
+                            ĐÃ THANH TOÁN
+                        </button>
                         {% endif %}
+                    </td>
                     </td>
                 </tr>
                 {% endfor %}
@@ -102,29 +117,30 @@
                             <div class="col-xl-6">
                                 <div class="form-group">
                                     <label>Mã hóa đơn:</label>
-                                    <div class="text-light p-2 bg-info font-weight-normal"></div>
+                                    <div class="text-light p-2 bg-info font-weight-normal" id="modal-mahoadon"></div>
                                 </div>
                                 <div class="form-group">
                                     <label>Tên khách hàng:</label>
-                                    <div class="text-light p-2 bg-info font-weight-normal"></div>
+                                    <div class="text-light p-2 bg-info font-weight-normal"
+                                         id="modal-tenkhachhang"></div>
                                 </div>
                                 <div class="form-group">
                                     <label>Số điện thoại:</label>
-                                    <div class="text-light p-2 bg-info font-weight-normal"></div>
+                                    <div class="text-light p-2 bg-info font-weight-normal" id="modal-sdt"></div>
                                 </div>
                             </div>
                             <div class="col-xl-6">
                                 <div class="form-group">
                                     <label>Tổng hóa đơn:</label>
-                                    <div class="text-light p-2 bg-info font-weight-normal"></div>
+                                    <div class="text-light p-2 bg-info font-weight-normal" id="modal-tongtien"></div>
                                 </div>
                                 <div class="form-group">
                                     <label>Ngày sinh:</label>
-                                    <div class="text-light p-2 bg-info font-weight-normal"></div>
+                                    <div class="text-light p-2 bg-info font-weight-normal" id="modal-ngaysinh"></div>
                                 </div>
                                 <div class="form-group">
                                     <label>Ngày khám:</label>
-                                    <div class="text-light p-2 bg-info font-weight-normal"></div>
+                                    <div class="text-light p-2 bg-info font-weight-normal" id="modal-ngaykham"></div>
                                 </div>
                             </div>
                         </div>
@@ -139,7 +155,6 @@
                                 <button type="button" class="btn btn-secondary mr-2" data-dismiss="modal">Thoát</button>
                                 <button type="button" class="btn btn-primary">Lưu</button>
                             </div>
-
                         </div>
                     </div>
                 </div>
@@ -149,10 +164,29 @@
 </div>
 
 <script>
-    $("#idForm").submit(function(e) {
+    document.addEventListener("DOMContentLoaded", () => {
+    const buttons = document.querySelectorAll(".thanh-toan-btn");
 
-    e.preventDefault(); // avoid to execute the actual submit of the form.
+    buttons.forEach(button => {
+        button.addEventListener("click", function () {
+            // Lấy dữ liệu từ các thuộc tính data-* trong nút
+            const hoadonId = button.getAttribute("data-id");
+            const ten = button.getAttribute("data-ten");
+            const sdt = button.getAttribute("data-sdt");
+            const value = button.getAttribute("data-value");
+            const ngaysinh = button.getAttribute("data-ngaysinh");
+            const ngaykham = button.getAttribute("data-ngaykham");
 
+            // Gán dữ liệu vào modal
+            document.querySelector("#exampleModalLabel").textContent = `Chi tiết hóa đơn #${hoadonId}`;
+            document.querySelector("#modal-mahoadon").textContent = hoadonId;
+            document.querySelector("#modal-tenkhachhang").textContent = ten;
+            document.querySelector("#modal-sdt").textContent = sdt;
+            document.querySelector("#modal-tongtien").textContent = value;
+            document.querySelector("#modal-ngaysinh").textContent = ngaysinh;
+            document.querySelector("#modal-ngaykham").textContent = ngaykham;
+        });
+    });
 });
 </script>
 {% else %}
