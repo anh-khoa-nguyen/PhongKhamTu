@@ -60,7 +60,7 @@ admin.add_view(TTHDView(name='Thanh toán hóa đơn'))
 
 #View của Admin:
 class UserView(AdminView):
-    column_list = ['username', 'ten', 'ngaysinh', 'gioitinh', 'chuyenkhoa', 'vaitro', 'sdt']
+    column_list = ['username', 'ten', 'ngaysinh', 'gioitinh', 'chuyennganh_id', 'vaitro', 'sdt']
     edit_modal = True
     create_modal = True
     column_searchable_list = ['ten']
@@ -69,7 +69,7 @@ class UserView(AdminView):
         'ten': 'Họ tên',
         'ngaysinh': 'Ngày sinh',
         'gioitinh': 'Giới tính',
-        'chuyenkhoa': 'Chuyên khoa',
+        'chuyennganh_id': 'Chuyên ngành',
         'vaitro': 'Quyền',
         'sdt': 'Số điện thoại'
     }
@@ -92,9 +92,9 @@ class QuyDinhView(AdminView):
     pass
 
 class SoBenhNhanView(BaseView):
-    @expose('/', methods=['get', 'post'])
+    @expose('/', methods=['get', 'put'])
     def index(self):
-        if request.method.__eq__('POST'):
+        if request.method.__eq__('put'):
             try:
                 new_max = int(request.form.get('maxPatients'))
                 if new_max < 1:

@@ -1,7 +1,7 @@
 from flask import render_template, request, redirect, session, jsonify
 from app import app, login
 
-import dao
+import dao, json
 from flask_login import login_user, logout_user #Ghi nhận trạng thái login, logout của session (Một phiên)
 
 from app.dao import count_so_phan_tu
@@ -12,28 +12,35 @@ from app.models import ChuyenNganh
 def index():
     return render_template('index.html')
 
-@app.route("/examine", methods=['POST', 'GET'])
+@app.route("/examine")
 def examine():
-    if request.method.__eq__('POST'):
-        data = request.get_json()  # Get the JSON data from the request
-        chuyennganh = data.get('chuyennganh')  # Get the 'chuyennganh' value
-        doctors = dao.load_bacsi(chuyennganh)  # Call the DAO function with the selected specialization
-
-        # Format doctors and return as JSON
-        doctor_list = [
-            {
-                "User": {"id": doctor.User.id, "ten": doctor.User.ten},  # Replace fields based on your model structure
-                "ChuyenNganh": {"id": doctor.ChuyenNganh.id, "ten": doctor.ChuyenNganh.ten}
-            }
-            for doctor in doctors
-        ]
-        return jsonify(doctors=doctor_list)  # Return the filtered doctors as a JSON response
-
     ngaycls = dao.get_remaining_days()
-
-
     cns = dao.load_object(ChuyenNganh)
     return render_template('examine.html', chuyennganhs = cns, ngayconlai = ngaycls)
+
+@app.route("/api/doctors/<chuyennganh>", methods=['POST'])
+def api_doctors(chuyennganh):
+    try:
+        doctors = dao.load_bstrucca(int(chuyennganh))
+
+        # Chuyển đổi các đối tượng Row thành dictionary có thể tuần tự hóa JSON
+        doctors_list = []
+        for doctor in doctors:
+            doctors_list.append({
+                "ten": doctor[0],
+                "chuyennganh": doctor[1],
+                "khoangthoigian": doctor[2],
+            })
+
+        # Trả về kết quả chuỗi JSON hợp lệ
+        return jsonify(doctors_list), 200
+
+    except Exception as e:
+        print(f"[ERROR] Server error in api_doctors: {e}")  # Log chi tiết lỗi
+        return jsonify({"error": "Server error occurred", "details": str(e)}), 500
+
+
+
 
 @app.route("/login", methods=['GET', 'POST'])
 def login_process():

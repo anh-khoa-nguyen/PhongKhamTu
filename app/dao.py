@@ -1,7 +1,7 @@
 import datetime
 from datetime import date
 
-from app.models import User, HoaDon, PhieuKhamBenh, BenhNhan, ChuyenNganh, UserRole  # Dùng DL trong bảng dữ liệu
+from app.models import User, HoaDon, PhieuKhamBenh, BenhNhan, ChuyenNganh, UserRole, LichKham, KhungGio  # Dùng DL trong bảng dữ liệu
 from app import app, db  # Import để lấy các thông số cấu hình, db để thêm vào CSDL
 import hashlib
 
@@ -90,14 +90,39 @@ def load_object(object):
     query = object.query.order_by("id")
     return query.all()
 
-def load_bacsi(chuyennganh):
-    query = User.query.filter(User.vaitro.__eq__(UserRole.BACSI))
+def load_bs(chuyennganh=None):
+    query = User.query.filter(User.vaitro == UserRole.BACSI)
 
     if chuyennganh:
-        query = db.session.query(User, ChuyenNganh).select_from(User).join(ChuyenNganh)
-        query = query.filter(ChuyenNganh.ten == chuyennganh)
+        query = db.session.query(User.id, User.ten, ChuyenNganh.ten).select_from(User).join(ChuyenNganh)
+        query = query.filter(User.vaitro == UserRole.BACSI, ChuyenNganh.id == chuyennganh)
 
-    return query
+    return query.all()
+
+
+def load_bstrucca(chuyennganh=None):
+    """
+    Lấy danh sách các bác sĩ trực ca dựa trên lịch khám (isTrong = True) và thông tin khung giờ.
+
+    :param chuyennganh: (Optional) Lọc theo chuyên ngành bác sĩ.
+    :return: Danh sách bác sĩ với thông tin lịch trực ca và khung giờ.
+    """
+    # Gọi hàm load_bs để lấy danh sách bác sĩ theo chuyên ngành (User.vaitro == UserRole.BACSI)
+    bacsi_query = load_bs(chuyennganh)
+
+    # Thực hiện truy vấn chính, kết hợp với các bảng liên quan như KhungGio
+    query = db.session.query(
+        User.ten.label("bacsi_ten"),
+        ChuyenNganh.ten.label("chuyennganh_ten"),
+        KhungGio.khoangthoigian.label("khunggio_ten"),
+    ).join(LichKham, LichKham.user_id == User.id) \
+        .join(KhungGio, LichKham.khunggio_id == KhungGio.id) \
+        .join(ChuyenNganh, ChuyenNganh.id == User.chuyennganh_id) \
+        .filter(User.id.in_([b.id for b in bacsi_query]), LichKham.isTrong == True)
+
+    return query.all()
+
+
 
 def load_hoadon(page = 1, date = datetime.date.today()):  # Load danh mục sản phẩm
     # query = db.session.query(HoaDon, PhieuKhamBenh, User).select_from(HoaDon).join(PhieuKhamBenh).join(User)
@@ -154,4 +179,4 @@ def load_sobntoida():
 
 if __name__ == '__main__':  # Tự phát hiện cái bảng này chưa có và nó tạo ra
     with app.app_context():
-        print(get_remaining_days())
+        print(load_bstrucca(3))

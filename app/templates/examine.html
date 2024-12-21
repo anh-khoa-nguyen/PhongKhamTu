@@ -144,10 +144,10 @@
                         <div class="d-flex align-items-center mb-2">
                             <div class="fw-bold me-2">Chọn chuyên khoa:</div>
                             <div>
-                                <select class="form-select" id="chuyennganhSelect">
+                                <select class="form-select" id="chuyennganhSelect" onchange="updateDoctorsTable(this)">
                                     <option selected value="">...</option>
                                     {% for cn in chuyennganhs %}
-                                    <option value="{{ cn.ten }}" class="chuyennganh-option">{{ cn.ten }}</option>
+                                    <option value="{{ cn.id }}" class="chuyennganh-option">{{ cn.ten }}</option>
                                     {% endfor %}
                                 </select>
                             </div>
@@ -192,56 +192,5 @@
 </div>
 </body>
 
-<script>
-    // Lấy các elements
-    const chuyennganhSelect = document.getElementById('chuyennganhSelect');
 
-    // Lắng nghe sự kiện change
-    chuyennganhSelect.addEventListener('change', function () {
-        const chuyennganh = chuyennganhSelect.value;
-
-        // Check if an actual specialization is selected
-        if (chuyennganh) {
-            // Send POST request using Fetch API
-            fetch('/examine', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ chuyennganh: chuyennganh }) // Send selected specialization
-            })
-            .then(response => response.json())
-            .then(data => {
-                // Handle the response to update UI dynamically
-                updateDoctorsTable(data.doctors); // Call a function to update the doctor table
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
-        }
-    });
-
-    // Hàm cập nhật danh sách bác sĩ vào bảng
-    function updateDoctorsTable(doctors) {
-        const table = document.querySelector('#doctorTable tbody'); // Locate the table's body
-        table.innerHTML = ''; // Clear existing rows
-
-        if (doctors.length > 0) {
-            doctors.forEach((doctor, index) => {
-                const row = `
-                    <tr>
-                        <td>${index + 1}</td>
-                        <td>${doctor.User.ten}</td>
-                        <td>${doctor.ChuyenNganh.ten}</td> <!-- Adapt fields as per actual model -->
-                        <td>...</td> <!-- Add more data if required -->
-                        <td><input type="radio" name="doctor" value="${doctor.User.id}"></td>
-                    </tr>
-                `;
-                table.innerHTML += row; // Append the new row
-            });
-        } else {
-            table.innerHTML = `<tr><td colspan="5">Không có bác sĩ phù hợp</td></tr>`;
-        }
-    }
-</script>
 {% endblock %}
