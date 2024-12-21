@@ -1,0 +1,67 @@
+{% extends 'admin/master.html' %}
+
+{% block body %}
+<div class="d-flex align-items-center justify-content-center vh-100">
+    <div class="text-center">
+        <p class="h4 m-4"> Số bệnh nhân tối đa trong ngày</p>
+        <h1 class="display-1 font-weight-bold m-4">{{sobntoida}}</h1>
+        <div class="d-flex justify-content-center m-4">
+            <button class="d-flex justify-content-center btn btn-secondary thanh-toan-btn"
+                    data-toggle="modal"
+                    data-target="#exampleModal"><i class="fa fa-pencil"></i></button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal HTML -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Cập nhật số bệnh nhân tối đa</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form method="POST" id="updateForm">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="maxPatientsInput">Nhập số bệnh nhân tối đa:</label>
+                        <input type="number" name="maxPatients" id="maxPatientsInput" class="form-control" required
+                               min="1">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('updateForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+
+        fetch('', {
+            method: 'POST',
+            body: formData,
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                location.reload();
+            } else {
+                alert("Lỗi: " + data.message);
+            }
+        })
+        .catch(err => {
+            alert("Có lỗi xảy ra, vui lòng thử lại sau.");
+            console.error("Error:", err);
+        });
+    });
+</script>
+{% endblock %}

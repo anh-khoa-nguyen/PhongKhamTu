@@ -15,6 +15,12 @@ class UserRole(RoleEnum):  # Chỉ là định nghĩa enum.
     YTA = 3
     THUNGAN = 4
 
+class ChuyenNganh(db.Model):
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    ten = Column(String(50))
+    users = relationship('User', backref='chuyennganh',
+                                  lazy=True)
+
 class User(db.Model, UserMixin):
     id = Column(Integer, primary_key=True, autoincrement=True)
     ten = Column(String(50))  # Không trùng lắp giữa các thể hiện
@@ -27,7 +33,7 @@ class User(db.Model, UserMixin):
     avatar = Column(String(100),
                     default='https://res.cloudinary.com/dxxwcby8l/image/upload/v1647056401/ipmsmnxjydrhpo21xrd8.jpg')
     sdt = Column(String(10), nullable=False, unique=True)
-    chuyenkhoa = Column(String(30))
+    chuyennganh_id = Column(Integer, ForeignKey(ChuyenNganh.id), nullable=False)
     vaitro = Column(Enum(UserRole))
     danhsachkhams = relationship('DanhSachKham', backref='user',
                                   lazy=True)
@@ -36,16 +42,17 @@ class User(db.Model, UserMixin):
     hoadons = relationship('HoaDon', backref='user',
                                   lazy=True)
 
-    def __init__(self, ten, username, password, vaitro, sdt=None, ngaysinh=None, chuyenkhoa=None, email=None, gioitinh=None):
+    def __init__(self, ten, username, password, vaitro, sdt=None, ngaysinh=None, chuyennganh=None, email=None, gioitinh=None):
         self.ten = ten
         self.username = username
         self.password = password
         self.vaitro = vaitro
         self.sdt = sdt
         self.ngaysinh = date.fromisoformat(ngaysinh) if ngaysinh else None  # Chuyển đổi từ chuỗi sang kiểu date
-        self.chuyenkhoa = chuyenkhoa
+        self.chuyennganh_id = chuyennganh
         self.email = email
         self.gioitinh = gioitinh\
+
 
 # Liên quan đến quá trình khám bệnh:
 
@@ -165,29 +172,38 @@ if __name__ == '__main__':  # Tự phát hiện cái bảng này chưa có và n
     with app.app_context():  # Trong phiên bản mới bắt lệnh này chạy trong ngữ cảnh ứng dụng
         db.create_all()  # Biến tất cả thành bảng dữ liệu, chuyển chữ "C" thành chữ "c"
         #
+
+        # Chuyên ngành:
+        cn1 = ChuyenNganh(ten='Quản trị')
+        cn2 = ChuyenNganh(ten='Thu Ngân')
+        cn3 = ChuyenNganh(ten='Nhi đa khoa')
+        cn4 = ChuyenNganh(ten='Ngoại lồng ngực')
+        db.session.add_all([cn1, cn2, cn3, cn4])
+        db.session.commit()
+
         #Người dùng
         import hashlib  # Sử dụng thuật toán băm
 
         u = User(ten='admin', username='admin', password=str(hashlib.md5('123456'.encode('utf-8')).hexdigest())
                  # Encode phòng trường hợp mật khẩu có dấu TV, ép toàn bộ thành chụỗi
-                 , vaitro=UserRole.ADMIN, sdt='0123456777', ngaysinh='2001-12-05', chuyenkhoa='Quản trị',
-                 email="adminou@gmail.com", gioitinh=1)
+                 , vaitro=UserRole.ADMIN, sdt='0123456777', ngaysinh='2001-12-05',
+                 email="adminou@gmail.com", gioitinh=1, chuyennganh=1)
 
         u1 = User(ten='Bác sĩ An', username='bsan', password=str(hashlib.md5('123456'.encode('utf-8')).hexdigest())
                   # Encode phòng trường hợp mật khẩu có dấu TV, ép toàn bộ thành chụỗi
-                  , vaitro=UserRole.BACSI, email="bsan@gmail.com", sdt='0123456781', chuyenkhoa='Nhi đa khoa',
-                  ngaysinh='2001-11-05', gioitinh=0)
+                  , vaitro=UserRole.BACSI, email="bsan@gmail.com", sdt='0123456781',
+                  ngaysinh='2001-11-05', gioitinh=0, chuyennganh=3)
 
         u2 = User(ten='Y tá Dâu', username='ytadau', password=str(hashlib.md5('123456'.encode('utf-8')).hexdigest())
                   # Encode phòng trường hợp mật khẩu có dấu TV, ép toàn bộ thành chụỗi
-                  , vaitro=UserRole.YTA, email="ytadau@gmail.com", sdt='0123456782', chuyenkhoa='Ngoại lồng ngực',
-                  ngaysinh='2001-10-05', gioitinh=1)
+                  , vaitro=UserRole.YTA, email="ytadau@gmail.com", sdt='0123456782',
+                  ngaysinh='2001-10-05', gioitinh=1, chuyennganh=4)
 
         u3 = User(ten='Thu ngân OU', username='thunganou',
                   password=str(hashlib.md5('123456'.encode('utf-8')).hexdigest())
                   # Encode phòng trường hợp mật khẩu có dấu TV, ép toàn bộ thành chụỗi
-                  , vaitro=UserRole.THUNGAN, email="thunganou@gmail.com", sdt='0123456783', chuyenkhoa='Thu Ngân',
-                  ngaysinh='2001-09-05', gioitinh=0)
+                  , vaitro=UserRole.THUNGAN, email="thunganou@gmail.com", sdt='0123456783',
+                  ngaysinh='2001-09-05', gioitinh=0, chuyennganh=2)
 
         db.session.add_all([u, u1, u2, u3])
         db.session.commit()

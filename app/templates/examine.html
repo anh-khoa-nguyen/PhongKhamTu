@@ -19,7 +19,7 @@
             <div class="col-lg-6" style="margin-left: 20px;">
                 <div class="bg-white text-center rounded p-5">
                     <h1 class="mb-4 text-black">ĐẶT LỊCH HẸN</h1>
-                    <form class="px-md-2" action="/tai-lieu/lap-phieu-hen" method="post">
+                    <form class="px-md-2" action="/examine" method="post">
                         <div class="row g-2">
                             <div class="col-12">
                                 <!--                                    <select class="form-select bg-light" name="Doctor" required="">-->
@@ -53,7 +53,7 @@
                                        required="">
                             </div>
 
-                            <input class="d-none" name="Username" type="text" value="">
+                            <input class="d-none" name="name" type="text" value="">
 
                             <div class="col-12 col-sm-6 text-start">
                                 <label class="form-label text-black" for="phone-number">Số điện thoại ∗</label>
@@ -88,40 +88,31 @@
                                 </div>
                             </div>
 
-                            <!--                                <div class="col-12 col-sm-4 text-start">-->
-                            <!--                                    <label for="time-meet" class="form-label text-black">Ngày hẹn ∗</label>-->
-                            <!--                                    <input type="date" class="form-control datetimepicker-input bg-light" id="date-meet" name="Date" required="">-->
-                            <!--                                </div>-->
-                            <!--                                <div class="col-12 col-sm-4 text-start">-->
-                            <!--                                    <label for="time-meet" class="form-label text-black">Giờ hẹn ∗</label>-->
-                            <!--                                    <input type="time" class="form-control datetimepicker-input bg-light" id="time-meet" name="Time" required="">-->
-                            <!--                                </div>-->
+                            <div class="col-sm-12 text-start">
+                                <label class="form-label text-black" for="email">Triệu chứng</label>
+                                <input type="text" id="trieuchung" class="form-control bg-light" name="trieuchung"
+                                       value="">
+                            </div>
+
+
                             <div class="text-start">
                                 <label for="time-meet" class="form-label text-black">Chọn lịch khám ∗</label>
                                 <table class="table">
                                     <thead>
                                     <tr>
                                         <th scope="col">Thứ</th>
-                                        <th scope="col">2</th>
-                                        <th scope="col">3</th>
-                                        <th scope="col">4</th>
-                                        <th scope="col">5</th>
-                                        <th scope="col">6</th>
-                                        <th scope="col">7</th>
-                                        <th scope="col">CN</th>
+                                        {% for ngay in ngayconlai%}
+                                        <th scope="col">{{'CN' if ngay == 8 else ngay}}</th>
+                                        {% endfor %}
                                         <th scope="col">Ghi Chú</th>
                                     </tr>
                                     </thead>
                                     <tbody>
                                     <tr>
                                         <th scope="row"></th>
-                                        <td><input type="radio" name="Dated" id="2"></td>
-                                        <td><input type="radio" name="Dated" id="3"></td>
-                                        <td><input type="radio" name="Dated" id="4"></td>
-                                        <td><input type="radio" name="Dated" id="5"></td>
-                                        <td><input type="radio" name="Dated" id="6"></td>
-                                        <td><input type="radio" name="Dated" id="7"></td>
-                                        <td><input type="radio" name="Dated" id="8"></td>
+                                        {% for ngay in ngayconlai%}
+                                        <td><input type="radio" name="Dated" id="thu{{ngay}}"></td>
+                                        {% endfor %}
                                         <td> Những ô không được chọn là ngày đã full lịch</td>
                                     </tr>
                                     </tbody>
@@ -146,48 +137,111 @@
                 <div class="mb-5">
                     <h1 class="display-3 text-dark"><b>Tạo một phiếu hẹn cho cá nhân</b></h1>
                 </div>
-                <p class="text-dark mb-5">Bạn có thể được khám bệnh bởi bác sĩ mà mình mong muốn vào khung giờ hẹn.</p>
+                <p class="text-dark mb-3">Bạn có thể được khám bệnh bởi bác sĩ mà mình mong muốn vào khung giờ hẹn.</p>
                 <div class="d-flex justify-content-center">
-<!--                    <a class="btn btn-dark rounded-pill py-3 px-5 me-3" href="#">Tìm bác sĩ</a>-->
-                     <div class="text-start">
-                                <label for="doctor" class="form-label text-black">Danh sách bác sĩ trực ca ∗</label>
-                                <table class="table">
-                                    <thead>
-                                    <tr>
-                                        <th scope="col">STT</th>
-                                        <th scope="col">Bác sĩ</th>
-                                        <th scope="col">Ca làm</th>
-                                        <th scope="col">Chọn</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    <tr>
-                                        <th scope="row">1</th>
-                                        <td>Trương Đan Huy </td>
-                                        <td>Sáng</td>
-                                        <td><input type="radio" name="Doctor"></td>
-                                    </tr>
-                                    <tr>
-                                        <th scope="row">2</th>
-                                        <td>Hồ Đức Ngọc</td>
-                                        <td>Chiều</td>
-                                        <td><input type="radio" name="Doctor"></td>
-                                    </tr>
-                                    <tr>
-                                        <th scope="row">3</th>
-                                        <td>Nguyễn Quang Minh</td>
-                                        <td>Chiều</td>
-                                        <td><input type="radio" name="Doctor"></td>
-                                    </tr>
-                                    </tbody>
-                                </table>
+                    <!--                    <a class="btn btn-dark rounded-pill py-3 px-5 me-3" href="#">Tìm bác sĩ</a>-->
+                    <div class="text-start">
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="fw-bold me-2">Chọn chuyên khoa:</div>
+                            <div>
+                                <select class="form-select" id="chuyennganhSelect">
+                                    <option selected value="">...</option>
+                                    {% for cn in chuyennganhs %}
+                                    <option value="{{ cn.ten }}" class="chuyennganh-option">{{ cn.ten }}</option>
+                                    {% endfor %}
+                                </select>
                             </div>
+                        </div>
+                        <label for="doctor" class="form-label text-black">Danh sách bác sĩ trực ca ∗</label>
+                        <table class="table"id="doctorTable">
+                            <thead>
+                            <tr>
+                                <th scope="col">STT</th>
+                                <th scope="col">Bác sĩ</th>
+                                <th scope="col">Chuyên ngành</th>
+                                <th scope="col">Ca làm</th>
+                                <th scope="col">Chọn</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr>
+                                <th scope="row">1</th>
+                                <td>Trương Đan Huy</td>
+                                <td>Sáng</td>
+                                <td><input type="radio" name="Doctor"></td>
+                            </tr>
+                            <tr>
+                                <th scope="row">2</th>
+                                <td>Hồ Đức Ngọc</td>
+                                <td>Chiều</td>
+                                <td><input type="radio" name="Doctor"></td>
+                            </tr>
+                            <tr>
+                                <th scope="row">3</th>
+                                <td>Nguyễn Quang Minh</td>
+                                <td>Chiều</td>
+                                <td><input type="radio" name="Doctor"></td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-
 </body>
+
+<script>
+    // Lấy các elements
+    const chuyennganhSelect = document.getElementById('chuyennganhSelect');
+
+    // Lắng nghe sự kiện change
+    chuyennganhSelect.addEventListener('change', function () {
+        const chuyennganh = chuyennganhSelect.value;
+
+        // Check if an actual specialization is selected
+        if (chuyennganh) {
+            // Send POST request using Fetch API
+            fetch('/examine', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ chuyennganh: chuyennganh }) // Send selected specialization
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Handle the response to update UI dynamically
+                updateDoctorsTable(data.doctors); // Call a function to update the doctor table
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+    });
+
+    // Hàm cập nhật danh sách bác sĩ vào bảng
+    function updateDoctorsTable(doctors) {
+        const table = document.querySelector('#doctorTable tbody'); // Locate the table's body
+        table.innerHTML = ''; // Clear existing rows
+
+        if (doctors.length > 0) {
+            doctors.forEach((doctor, index) => {
+                const row = `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${doctor.User.ten}</td>
+                        <td>${doctor.ChuyenNganh.ten}</td> <!-- Adapt fields as per actual model -->
+                        <td>...</td> <!-- Add more data if required -->
+                        <td><input type="radio" name="doctor" value="${doctor.User.id}"></td>
+                    </tr>
+                `;
+                table.innerHTML += row; // Append the new row
+            });
+        } else {
+            table.innerHTML = `<tr><td colspan="5">Không có bác sĩ phù hợp</td></tr>`;
+        }
+    }
+</script>
 {% endblock %}

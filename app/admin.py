@@ -36,10 +36,11 @@ class LPKView(BSView):
 admin.add_view(LPKView(name='Lập phiếu khám'))
 
 #View của Y tá:
-class LDSKView(BSView):
+class LDSKView(YTView):
     @expose('/')
     def index(self):
-        return self.render('admin/danhsachkham.html')
+        sobnmax = dao.load_sobntoida()
+        return self.render('admin/danhsachkham.html', sobntoida = sobnmax)
 admin.add_view(LDSKView(name='Lập danh sách khám'))
 
 #View của Thu ngân:
@@ -90,12 +91,32 @@ class QLLoaiThuocView(AdminView):
 class QuyDinhView(AdminView):
     pass
 
+class SoBenhNhanView(BaseView):
+    @expose('/', methods=['get', 'post'])
+    def index(self):
+        if request.method.__eq__('POST'):
+            try:
+                new_max = int(request.form.get('maxPatients'))
+                if new_max < 1:
+                    return jsonify({"success": False, "message": "Giá trị phải lớn hơn 0!"}), 400
+
+                app.config['SO_BENH_NHAN_TRONG_NGAY'] = new_max
+
+                return jsonify({"success": True, "message": "Cập nhật thành công!"}), 200
+            except Exception as e:
+                return jsonify({"success": False, "message": "Có lỗi xảy ra: " + str(e)}), 500
+
+        sobnmax = dao.load_sobntoida()
+        return self.render('admin/bntoida.html', sobntoida = sobnmax)
+    def is_accessible(self):
+        return current_user.is_authenticated and current_user.vaitro == UserRole.ADMIN
+
+admin.add_view(SoBenhNhanView(name='Số bệnh nhân tối đa'))
+
 class ThongKeView(BaseView):
     @expose('/')
-
     def index(self):
-        logout_user()
-        return redirect('/')
+        return self.render('admin/thongke.html')
 
     def is_accessible(self):
         return current_user.is_authenticated and current_user.vaitro == UserRole.ADMIN

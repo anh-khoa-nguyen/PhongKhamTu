@@ -1,11 +1,70 @@
 import datetime
+from datetime import date
 
-from app.models import User, HoaDon, PhieuKhamBenh, BenhNhan  # Dùng DL trong bảng dữ liệu
+from app.models import User, HoaDon, PhieuKhamBenh, BenhNhan, ChuyenNganh, UserRole  # Dùng DL trong bảng dữ liệu
 from app import app, db  # Import để lấy các thông số cấu hình, db để thêm vào CSDL
 import hashlib
 
+def get_day(input_date=None):
+    """
+    Lấy tên ngày trong tuần từ một ngày nhất định (hoặc ngày hiện tại nếu không truyền tham số).
+    Trả về tên ngày bằng tiếng Việt.
+
+    :param input_date: Ngày (kiểu datetime.date). Mặc định là ngày hôm nay.
+    :return: Tên ngày bằng tiếng Việt (str).
+    """
+    # Lấy ngày hiện tại hoặc ngày được cung cấp
+    if input_date is None:
+        input_date = datetime.date.today()
+
+    # Ánh xạ tên ngày từ tiếng Anh sang tiếng Việt
+    day_mapping = {
+        "Monday": "2",
+        "Tuesday": "3",
+        "Wednesday": "4",
+        "Thursday": "5",
+        "Friday": "6",
+        "Saturday": "7",
+        "Sunday": "CN"
+    }
+
+    # Lấy tên ngày trong tuần (English)
+    eng_day = input_date.strftime("%A")  # '%A' trả về tên ngày dài: Monday, Tuesday, ...
+
+    # Dịch sang tiếng Việt
+    return day_mapping.get(eng_day, "Không xác định")
+
+
+import datetime
+
+
+def get_remaining_days(input_date=None):
+    """
+    Trả về danh sách các ngày còn lại trong tuần (bao gồm ngày hiện tại), với mỗi ngày đại diện bằng số (2 = Thứ 2, ..., 8 = CN).
+    :param input_date: Ngày (kiểu datetime.date). Mặc định là ngày hôm nay.
+    :return: Danh sách các ngày còn lại trong tuần (dạng mảng số).
+    """
+    # Lấy ngày hiện tại nếu không truyền tham số
+    if input_date is None:
+        input_date = datetime.date.today()
+
+    # Lấy thứ của ngày hiện tại (0 = Thứ Hai, ..., 6 = Chủ Nhật)
+    current_day_index = input_date.weekday()
+
+    # Chuyển current_day_index về dạng số tương ứng (2 = Thứ 2, ..., 8 = CN)
+    # Kết quả sẽ là [2, 3, ..., 8] tương ứng với các ngày còn lại trong tuần
+    remaining_days = [i + 2 for i in range(current_day_index, 7)]
+
+    return remaining_days
+
+
+
 def count_so_phan_tu(object):
     return object.query.count()
+
+def count_user_theo_vaitro(vaitro):
+    users = User.query.filter(User.vaitro == vaitro)
+    return users.count()
 
 def so_phan_tu(page, query=None):
     page_size = app.config['SO_PHAN_TU']
@@ -27,6 +86,18 @@ def auth_user(username, password, role=None):
 def get_user_by_id(user_id):
     return User.query.get(user_id)  # Truy vấn trong bảng dữ liệu để lấy user_id
 
+def load_object(object):
+    query = object.query.order_by("id")
+    return query.all()
+
+def load_bacsi(chuyennganh):
+    query = User.query.filter(User.vaitro.__eq__(UserRole.BACSI))
+
+    if chuyennganh:
+        query = db.session.query(User, ChuyenNganh).select_from(User).join(ChuyenNganh)
+        query = query.filter(ChuyenNganh.ten == chuyennganh)
+
+    return query
 
 def load_hoadon(page = 1, date = datetime.date.today()):  # Load danh mục sản phẩm
     # query = db.session.query(HoaDon, PhieuKhamBenh, User).select_from(HoaDon).join(PhieuKhamBenh).join(User)
@@ -75,3 +146,12 @@ def tim_hoadon(hoadonid):
 def load_phieukhambenh():
     query = db.session.query(PhieuKhamBenh, BenhNhan, User).select_from(PhieuKhamBenh).join(BenhNhan).join(User)
     return query.all()
+
+def load_sobntoida():
+    sobntoida = app.config['SO_BENH_NHAN_TRONG_NGAY']
+    return sobntoida
+
+
+if __name__ == '__main__':  # Tự phát hiện cái bảng này chưa có và nó tạo ra
+    with app.app_context():
+        print(get_remaining_days())

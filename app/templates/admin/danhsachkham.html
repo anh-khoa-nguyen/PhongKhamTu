@@ -1,0 +1,161 @@
+{% extends 'admin/master.html' %}
+
+{% block body %}
+<div class="container mb-5 mt-3">
+    <div class="row d-flex align-items-baseline">
+        <div class="col-xl-9">
+            <p style="color: #7e8d9f;font-size: 20px;">LẬP DANH SÁCH KHÁM
+            </p>
+        </div>
+        <div class="col-xl-3 float-end">
+            <div class="font-weight-bold font-italic">Phòng khám MIYEK</div>
+            <div class="font-weight-bold font-italic">Số bệnh nhân tối đa: {{sobntoida}}</div>
+        </div>
+        <hr>
+    </div>
+
+    <div class="container">
+        <div class="col-md-12">
+            <div class="text-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                     class="bi bi-file-medical" viewBox="0 0 16 16">
+                    <path d="M8.5 4.5a.5.5 0 0 0-1 0v.634l-.549-.317a.5.5 0 1 0-.5.866L7 6l-.549.317a.5.5 0 1 0 .5.866l.549-.317V7.5a.5.5 0 1 0 1 0v-.634l.549.317a.5.5 0 1 0 .5-.866L9 6l.549-.317a.5.5 0 1 0-.5-.866l-.549.317V4.5zM5.5 9a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1h-5zm0 2a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1h-5z"></path>
+                    <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2zm10-1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1z"></path>
+                </svg>
+                <form action="post" action="/hoadon">
+                    <p class="pt-0 font-weight-bold">Chọn ngày:</p>
+                    <div class="justify-content-center d-flex center">
+                        <input type="date" name="datepicker">
+                        <button class="btn btn-primary ml-3">Chọn</button>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+
+        <div class="row">
+            <div class="col-xl-8">
+            </div>
+            <div class="col-xl-4">
+
+            </div>
+        </div>
+
+        <div class="row my-2 mx-1 justify-content-center">
+            <table class="table table-striped table-borderless auto-index">
+                <thead style="background-color:#84B0CA ;" class="text-white">
+                <tr>
+                    <th scope="col" class="text-center">STT</th>
+                    <th scope="col" class="text-center">Họ tên</th>
+                    <th scope="col" class="text-center">Thời điểm đăng ký</th>
+                    <th scope="col" class="text-center">Giới tính</th>
+                    <th scope="col" class="text-center">Ngày sinh</th>
+                    <th scope="col" class="text-center">SĐT</th>
+                    <!--                    <th scope="col" class="text-center"></th>-->
+                </tr>
+                </thead>
+                <tbody>
+                {% for h in hoadons %}
+                <tr>
+                    <td>{{h.id}}</td>
+                    <td>{{h.ngaykham}}</td>
+                    <td>{{h.ten}}</td>
+                    <td>{% if h.gioitinh == 0 %} Nam {% else %} Nữ {% endif %}</td>
+                    <td>{{h.ngaysinh}}</td>
+                    <td>{{h.value}}</td>
+                    <td>
+                        {% if h.isThanhtoan == 0 %}
+                        <button
+                                class="d-flex justify-content-center btn btn-danger thanh-toan-btn"
+                                data-toggle="modal"
+                                data-target="#exampleModal"
+                                data-id="{{ h.id }}"
+                                data-ten="{{ h.ten }}"
+                                data-sdt="{{ h.sdt }}"
+                                data-value="{{ h.value }}"
+                                data-ngaysinh="{{ h.ngaysinh }}"
+                                data-ngaykham="{{ h.ngaykham }}">
+                            CHƯA THANH TOÁN
+                        </button>
+                        {% else %}
+                        <button
+                                class="d-flex justify-content-center btn btn-success thanh-toan-btn"
+                                data-id="{{h.id}}"
+                                data-ten="{{h.ten}}"
+                                data-sdt="{{h.sdt}}"
+                                data-value="{{h.value}}"
+                                data-ngaysinh="{{h.ngaysinh}}"
+                                data-ngaykham="{{h.ngaykham}}">
+                            ĐÃ THANH TOÁN
+                        </button>
+                        {% endif %}
+                    </td>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+
+
+            <!-- Modal -->
+            <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+                 aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Chi tiết hóa đơn</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body row d-flex align-items-baseline">
+                            <div class="col-xl-6">
+                                <div class="form-group">
+                                    <label>Mã hóa đơn:</label>
+                                    <div class="text-light p-2 bg-info font-weight-normal" id="modal-mahoadon"></div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Tên khách hàng:</label>
+                                    <div class="text-light p-2 bg-info font-weight-normal"
+                                         id="modal-tenkhachhang"></div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Số điện thoại:</label>
+                                    <div class="text-light p-2 bg-info font-weight-normal" id="modal-sdt"></div>
+                                </div>
+                            </div>
+                            <div class="col-xl-6">
+                                <div class="form-group">
+                                    <label>Tổng hóa đơn:</label>
+                                    <div class="text-light p-2 bg-info font-weight-normal" id="modal-tongtien"></div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Ngày sinh:</label>
+                                    <div class="text-light p-2 bg-info font-weight-normal" id="modal-ngaysinh"></div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Ngày khám:</label>
+                                    <div class="text-light p-2 bg-info font-weight-normal" id="modal-ngaykham"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <div class="col-xl-9 d-flex justify-content-center">
+                                <button type="button" class="btn btn-secondary mr-4" data-dismiss="modal">Thanh toán tại
+                                    quầy
+                                </button>
+                                <button type="button" class="btn btn-primary">Thanh toán qua MOMO</button>
+                            </div>
+                            <div class="col-xl-3 d-flex justify-content-end">
+                                <button type="button" class="btn btn-secondary mr-2" data-dismiss="modal">Thoát</button>
+                                <button type="button" class="btn btn-primary">Lưu</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
