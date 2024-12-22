@@ -15,182 +15,156 @@
 
 <div class="container-fluid p-3 mb-2 bg-light text-dark my-5 py-5">
     <div class="container py-5">
-        <div class="row gx-5">
-            <div class="col-lg-6" style="margin-left: 20px;">
-                <div class="bg-white text-center rounded p-5">
-                    <h1 class="mb-4 text-black">ĐẶT LỊCH HẸN</h1>
-                    <form class="px-md-2" action="/examine" method="post">
-                        <div class="row g-2">
-                            <div class="col-12">
-                                <!--                                    <select class="form-select bg-light" name="Doctor" required="">-->
-                                <!--                                        <option value="">Chọn bác sĩ ∗</option>-->
-                                <!--                                        <option value="{&quot;ID&quot;:&quot;1&quot;, &quot;Name&quot;:&quot;Trương Đan Huy &quot;}">Trương Đan Huy </option>-->
-                                <!--                                        <option value="{&quot;ID&quot;:&quot;2&quot;, &quot;Name&quot;:&quot;Võ Thành Nhân&quot;}">Võ Thành Nhân</option>-->
-                                <!--                                        <option value="{&quot;ID&quot;:&quot;3&quot;, &quot;Name&quot;:&quot;Hoàng Nhất Tín&quot;}">Hoàng Nhất Tín</option>-->
-                                <!--                                        <option value="{&quot;ID&quot;:&quot;4&quot;, &quot;Name&quot;:&quot;Trần Quang Huy&quot;}">Trần Quang Huy</option>-->
-                                <!--                                        <option value="{&quot;ID&quot;:&quot;5&quot;, &quot;Name&quot;:&quot;Phương Quang Kiệt&quot;}">Phương Quang Kiệt</option>-->
-                                <!--                                        <option value="{&quot;ID&quot;:&quot;6&quot;, &quot;Name&quot;:&quot;Phạm Nhật An&quot;}">Phạm Nhật An</option>-->
-                                <!--                                        <option value="{&quot;ID&quot;:&quot;7&quot;, &quot;Name&quot;:&quot;Selina M. Luger&quot;}">Selina M. Luger</option>-->
-                                <!--                                        <option value="{&quot;ID&quot;:&quot;8&quot;, &quot;Name&quot;:&quot;Tôn Thất Trí Dũng&quot;}">Tôn Thất Trí Dũng</option>-->
-                                <!--                                        <option value="{&quot;ID&quot;:&quot;9&quot;, &quot;Name&quot;:&quot;Ngô Văn Đoan&quot;}">Ngô Văn Đoan</option>-->
-                                <!--                                        <option value="{&quot;ID&quot;:&quot;10&quot;, &quot;Name&quot;:&quot;Thái Bằng&quot;}">Thái Bằng</option>-->
-                                <!--                                        <option value="{&quot;ID&quot;:&quot;11&quot;, &quot;Name&quot;:&quot;Phạm Thị Hạnh Phúc&quot;}">Phạm Thị Hạnh Phúc</option>-->
-                                <!--                                        <option value="{&quot;ID&quot;:&quot;12&quot;, &quot;Name&quot;:&quot;Huỳnh Như Quốc Hùng&quot;}">Huỳnh Như Quốc Hùng</option>-->
-                                <!--                                        <option value="{&quot;ID&quot;:&quot;13&quot;, &quot;Name&quot;:&quot;Lại Đỗ Quyên&quot;}">Lại Đỗ Quyên</option>-->
-                                <!--                                        <option value="{&quot;ID&quot;:&quot;14&quot;, &quot;Name&quot;:&quot;Nguyễn Khoa Bình&quot;}">Nguyễn Khoa Bình</option>-->
-                                <!--                                        <option value="{&quot;ID&quot;:&quot;15&quot;, &quot;Name&quot;:&quot;Nguyễn Minh Quyết&quot;}">Nguyễn Minh Quyết</option>-->
-                                <!--                                        <option value="{&quot;ID&quot;:&quot;16&quot;, &quot;Name&quot;:&quot;Lê Thị Thu Hằng&quot;}">Lê Thị Thu Hằng</option>-->
-                                <!--                                        <option value="{&quot;ID&quot;:&quot;17&quot;, &quot;Name&quot;:&quot;Nguyễn Thị Ngọc Lan&quot;}">Nguyễn Thị Ngọc Lan</option>-->
-                                <!--                                        <option value="{&quot;ID&quot;:&quot;18&quot;, &quot;Name&quot;:&quot;Trần Hồng Nhật&quot;}">Trần Hồng Nhật</option>-->
-                                <!--                                        <option value="{&quot;ID&quot;:&quot;19&quot;, &quot;Name&quot;:&quot;Trần Khắc Điền&quot;}">Trần Khắc Điền</option>-->
-                                <!--                                        <option value="{&quot;ID&quot;:&quot;20&quot;, &quot;Name&quot;:&quot;Lê Phúc Liên&quot;}">Lê Phúc Liên</option>-->
-                                <!--                                    </select>-->
-                            </div>
-
-                            <div class="col-12 col-sm-6 text-start">
-                                <label class="form-label text-black" for="name">Họ và tên ∗</label>
-                                <input type="text" id="name" class="form-control bg-light" name="Name" value=""
-                                       required="">
-                            </div>
-
-                            <input class="d-none" name="name" type="text" value="">
-
-                            <div class="col-12 col-sm-6 text-start">
-                                <label class="form-label text-black" for="phone-number">Số điện thoại ∗</label>
-                                <input type="text" id="phone-number" class="form-control bg-light" name="Phone" value=""
-                                       required="">
-                            </div>
-
-                            <div class="col-sm-12 text-start">
-                                <label class="form-label text-black" for="email">Email</label>
-                                <input type="email" id="email" class="form-control bg-light" name="Email" value="">
-                            </div>
-
-                            <div class="col-12 col-sm-6 text-start">
-                                <label for="date-of-birth" class="form-label text-black">Ngày sinh ∗</label>
-                                <input type="date" class="form-control datetimepicker-input bg-light" id="date-of-birth"
-                                       name="DOB" value="" required="">
-                            </div>
-
-                            <div class="col-12 col-sm-6 text-start ">
-                                <label class="form-label text-black" for="sex">Giới tính</label>
-                                <div class="form-check ">
-                                    <input class="form-check-input" type="radio" name="Gender" id="male" checked>
-                                    <label class="form-check-label" for="male">
-                                        Nam
-                                    </label>
+        <form method="post" action="/register" enctype="multipart/form-data">
+            <div class="row gx-5">
+                <div class="col-lg-6" style="margin-left: 20px;">
+                    <div class="bg-white text-center rounded p-5">
+                        <h1 class="mb-5 text-black">ĐẶT LỊCH HẸN</h1>
+                        <div class="px-md-2">
+                            <div class="row">
+                                <div class="col-12 d-flex align-items-center justify-content-center flex-wrap bg-info rounded p-2">
+                                    <label class="me-3 fw-bolder" for="bnphone">Nhập số điện thoại:</label>
+                                    <input class="form-control bg-light w-auto me-3" id="sdtcheck" maxlength="10" type="number">
+                                    <button class="btn btn-success px-3" id="sdtcheckbtn" onclick="checkSDT()">Kiểm tra</button>
                                 </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="Gender" id="female">
-                                    <label class="form-check-label" for="female">
-                                        Nữ
-                                    </label>
+
+                                    <!-- Div thông báo kết quả -->
+                                <div id="sdtstatus" class="text-center my-3" style="font-weight: bold;"></div>
+                            </div>
+                            <div class="row g-2">
+
+                                <div class="col-sm-12 text-start">
+                                    <label class="form-label text-black" for="bnname">Họ và tên ∗</label>
+                                    <input type="text" id="bnname" class="form-control bg-light" name="bnname" value=""
+                                           required="">
                                 </div>
-                            </div>
 
-                            <div class="col-sm-12 text-start">
-                                <label class="form-label text-black" for="email">Triệu chứng</label>
-                                <input type="text" id="trieuchung" class="form-control bg-light" name="trieuchung"
-                                       value="">
-                            </div>
+                                <div class="col-sm-12 text-start">
+                                    <label class="form-label text-black" for="bnemail">Email</label>
+                                    <input type="email" id="bnemail" class="form-control bg-light" name="bnemail"
+                                           value="">
+                                </div>
+
+                                <div class="col-12 col-sm-6 text-start">
+                                    <label for="bnsinh" class="form-label text-black">Ngày sinh ∗</label>
+                                    <input type="date" class="form-control datetimepicker-input bg-light"
+                                           id="bnsinh"
+                                           name="bnsinh" value="" required="">
+                                </div>
+
+                                <div class="col-12 col-sm-6 text-start ">
+                                    <label class="form-label text-black" for="sex">Giới tính</label>
+                                    <div class="form-check ">
+                                        <input class="form-check-input" type="radio" name="bngioi" id="male" checked>
+                                        <label class="form-check-label" for="male">
+                                            Nam
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="bngioi" id="female">
+                                        <label class="form-check-label" for="female">
+                                            Nữ
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-12 text-start">
+                                    <label class="form-label text-black" for="bntrieuchung">Triệu chứng</label>
+                                    <input type="text" id="bntrieuchung" class="form-control bg-light"
+                                           name="bntrieuchung"
+                                           value="">
+                                </div>
 
 
-                            <div class="text-start">
-                                <label for="time-meet" class="form-label text-black">Chọn lịch khám ∗</label>
-                                <table class="table">
-                                    <thead>
-                                    <tr>
-                                        <th scope="col">Thứ</th>
-                                        {% for ngay in ngayconlai%}
-                                        <th scope="col">{{'CN' if ngay == 8 else ngay}}</th>
-                                        {% endfor %}
-                                        <th scope="col">Ghi Chú</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    <tr>
-                                        <th scope="row"></th>
-                                        {% for ngay in ngayconlai%}
-                                        <td><input type="radio" name="Dated" id="thu{{ngay}}"></td>
-                                        {% endfor %}
-                                        <td> Những ô không được chọn là ngày đã full lịch</td>
-                                    </tr>
-                                    </tbody>
-                                </table>
-                            </div>
+                                <div class="text-start">
+                                    <label for="bnlichkham" class="form-label text-black">Chọn lịch khám ∗</label>
+                                    <table class="table">
+                                        <thead>
+                                        <tr>
+                                            <th scope="col">Thứ</th>
+                                            {% for ngay in ngayconlai%}
+                                            <th scope="col">{{'CN' if ngay == 8 else ngay}}</th>
+                                            {% endfor %}
+                                            <th scope="col">Ghi Chú</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr>
+                                            <th scope="row"></th>
+                                            {% for ngay in ngayconlai%}
+                                            <td><input type="radio" id="thu{{ngay}}" name="bnlichkham"></td>
+                                            {% endfor %}
+                                            <td> Những ô không được chọn là ngày đã full lịch</td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
 
-                            <div class="col-sm-2"></div>
-                            <div class="col-sm-6">
-                                <button class="btn btn-primary w-100 py-3" type="submit" style="margin-top: 20px;">
-                                    Tạo phiếu hẹn
-                                </button>
-                            </div>
-                            <div id="status" class="col-sm-12 text-start" style="color: red;">(*) Thông tin bắt buộc
-                                phải nhập
+                                <div class="col-sm-2"></div>
+                                <div class="col-sm-6">
+                                    <button class="btn btn-primary w-100 py-3" type="submit" style="margin-top: 20px;">
+                                        Tạo phiếu hẹn
+                                    </button>
+                                </div>
+                                <div id="status" class="col-sm-12 text-start" style="color: red;">(*) Thông tin bắt buộc
+                                    phải nhập
+                                </div>
                             </div>
                         </div>
-                    </form>
+                    </div>
                 </div>
-            </div>
+                <div class="col-lg-5">
+                    <div class="mb-5">
+                        <h1 class="display-3 text-dark"><b>Tạo một phiếu hẹn cho cá nhân</b></h1>
+                    </div>
+                    <p class="text-dark mb-3">Bạn có thể được khám bệnh bởi bác sĩ mà mình mong muốn vào khung giờ
+                        hẹn.</p>
 
-            <div class="col-lg-5">
-                <div class="mb-5">
-                    <h1 class="display-3 text-dark"><b>Tạo một phiếu hẹn cho cá nhân</b></h1>
-                </div>
-                <p class="text-dark mb-3">Bạn có thể được khám bệnh bởi bác sĩ mà mình mong muốn vào khung giờ hẹn.</p>
-                <div class="d-flex justify-content-center">
-                    <!--                    <a class="btn btn-dark rounded-pill py-3 px-5 me-3" href="#">Tìm bác sĩ</a>-->
-                    <div class="text-start">
-                        <div class="d-flex align-items-center mb-2">
-                            <div class="fw-bold me-2">Chọn chuyên khoa:</div>
-                            <div>
-                                <select class="form-select" id="chuyennganhSelect" onchange="updateDoctorsTable(this)">
-                                    <option selected value="">...</option>
-                                    {% for cn in chuyennganhs %}
-                                    <option value="{{ cn.id }}" class="chuyennganh-option">{{ cn.ten }}</option>
-                                    {% endfor %}
-                                </select>
+                    <div class="d-flex justify-content-center">
+                        <div class="text-start">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="fw-bold me-2">Chọn chuyên khoa:</div>
+                                <div>
+                                    <select class="form-select" id="chuyennganhSelect"
+                                            onchange="updateDoctorsTable(this)">
+                                        <option selected value="" class="chuyennganh-option">-- Chọn --</option>
+                                        {% for cn in chuyennganhs %}
+                                        <option value="{{ cn.id }}" class="chuyennganh-option">{{ cn.ten }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
                             </div>
+                            <label for="bnbacsi" class="form-label text-black">Danh sách bác sĩ trực ca ∗</label>
+                            <table class="table" id="doctorTable">
+                                <thead>
+                                <tr>
+                                    <th scope="col">STT</th>
+                                    <th scope="col">Bác sĩ</th>
+                                    <th scope="col">Chuyên ngành</th>
+                                    <th scope="col">Ca làm</th>
+                                    <th scope="col">Chọn</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for d in doctors %}
+                                <tr>
+                                    <th scope="row">{{ loop.index }}</th>
+                                    <td>{{d[0]}}</td>
+                                    <td>{{d[1]}}</td>
+                                    <td>{{d[2]}}</td>
+                                    <td><input type="radio" name="bnbacsi"></td>
+                                </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
                         </div>
-                        <label for="doctor" class="form-label text-black">Danh sách bác sĩ trực ca ∗</label>
-                        <table class="table"id="doctorTable">
-                            <thead>
-                            <tr>
-                                <th scope="col">STT</th>
-                                <th scope="col">Bác sĩ</th>
-                                <th scope="col">Chuyên ngành</th>
-                                <th scope="col">Ca làm</th>
-                                <th scope="col">Chọn</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr>
-                                <th scope="row">1</th>
-                                <td>Trương Đan Huy</td>
-                                <td>Sáng</td>
-                                <td><input type="radio" name="Doctor"></td>
-                            </tr>
-                            <tr>
-                                <th scope="row">2</th>
-                                <td>Hồ Đức Ngọc</td>
-                                <td>Chiều</td>
-                                <td><input type="radio" name="Doctor"></td>
-                            </tr>
-                            <tr>
-                                <th scope="row">3</th>
-                                <td>Nguyễn Quang Minh</td>
-                                <td>Chiều</td>
-                                <td><input type="radio" name="Doctor"></td>
-                            </tr>
-                            </tbody>
-                        </table>
                     </div>
                 </div>
             </div>
-        </div>
+
+        </form>
     </div>
 </div>
 </body>
-
 
 {% endblock %}

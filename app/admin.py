@@ -1,6 +1,11 @@
 import math
+from datetime import datetime
 
-from app.models import User, UserRole, Thuoc, LoaiThuoc, DichVu, HoaDon
+from flask_admin.contrib.sqla.fields import QuerySelectField
+from flask_admin.form import Select2Widget
+from wtforms.fields.choices import SelectField
+
+from app.models import User, UserRole, Thuoc, LoaiThuoc, DichVu, HoaDon, ChuyenNganh, DonViThuoc
 from flask_admin import Admin, BaseView, expose #View bình thường gọi là BaseView
 from app import app, db #Chèn db để thêm xóa sửa db
 from flask_admin.contrib.sqla import ModelView #Quản trị thằng nào đó thì import thằng đó vào, Model-View gắn liền với 1 view - 1 model,
@@ -60,30 +65,71 @@ admin.add_view(TTHDView(name='Thanh toán hóa đơn'))
 
 #View của Admin:
 class UserView(AdminView):
-    column_list = ['username', 'ten', 'ngaysinh', 'gioitinh', 'chuyennganh_id', 'vaitro', 'sdt']
+    column_list = ['username', 'ten', 'ngaysinh', 'gioitinh', 'chuyennganh.ten', 'vaitro', 'sdt']
     edit_modal = True
     create_modal = True
+    column_formatters = {
+        'gioitinh': lambda v, c, m, p: 'Nữ' if m.gioitinh else 'Nam'
+    }
+    form_overrides = {
+        'gioitinh': SelectField
+    }
+
+    form_args = {
+        'gioitinh': {
+            'choices': [(True, 'Nữ'), (False, 'Nam')],
+            'label': 'Giới Tính'
+        }
+    }
     column_searchable_list = ['ten']
     column_labels = {
         'username': 'Username',
         'ten': 'Họ tên',
         'ngaysinh': 'Ngày sinh',
         'gioitinh': 'Giới tính',
-        'chuyennganh_id': 'Chuyên ngành',
+        'chuyennganh.ten': 'Tên Chuyên Ngành',
         'vaitro': 'Quyền',
         'sdt': 'Số điện thoại'
     }
+    form_extra_fields = {
+        'chuyennganh': QuerySelectField(
+            'Chuyên Ngành',
+            query_factory=lambda: db.session.query(ChuyenNganh).all(),
+            get_label='ten',  # Lấy tên chuyên ngành hiển thị
+            allow_blank=False,  # Không cho phép giá trị rỗng
+            widget=Select2Widget()
+        )
+    }
+
+    def on_model_change(self, form, model, is_created):
+        if form.chuyennganh.data:
+            model.chuyennganh_id = form.chuyennganh.data.id
+        super().on_model_change(form, model, is_created)
 
 
 class QLThuocView(AdminView):
-    column_list = ['ten','tac_dung','gia','donvithuoc_id','loaithuocs']
+    column_list = ['ten','tac_dung','gia','donvithuoc.donvi','loaithuocs']
     column_labels = {
         'ten': 'Tên',
         'tac_dung':'Tác dụng',
         'gia': 'Giá',
-        'donvithuoc_id': 'Đơn vị thuốc',
+        'donvithuoc.donvi': 'Đơn vị thuốc',
         'loaithuocs':'Loại thuốc'
     }
+    form_extra_fields = {
+        'donvithuoc': QuerySelectField(
+            'Đơn vị Thuốc',
+            query_factory=lambda: db.session.query(DonViThuoc).all(),
+            get_label='donvi',  # Lấy tên  hiển thị
+            allow_blank=False,  # Không cho phép giá trị rỗng
+            widget=Select2Widget()
+        )
+    }
+
+    def on_model_change(self, form, model, is_created):
+        if form.donvithuoc.data:
+            model.donvithuoc_id = form.donvithuoc.data.id
+        super().on_model_change(form, model, is_created)
 
 class QLLoaiThuocView(AdminView):
     pass
@@ -94,7 +140,7 @@ class QuyDinhView(AdminView):
 class SoBenhNhanView(BaseView):
     @expose('/', methods=['get', 'put'])
     def index(self):
-        if request.method.__eq__('put'):
+        if request.method.__eq__('PUT'):
             try:
                 new_max = int(request.form.get('maxPatients'))
                 if new_max < 1:
@@ -116,7 +162,11 @@ admin.add_view(SoBenhNhanView(name='Số bệnh nhân tối đa'))
 class ThongKeView(BaseView):
     @expose('/')
     def index(self):
-        return self.render('admin/thongke.html')
+        monthmedicine = request.args.get('monthMedicine', datetime.now().month)
+        month = request.args.get('month', datetime.now().month)
+        return self.render('/admin/thongke.html',medicine_stats=dao.medicine_rates_month_stats(monthmedicine), tansuatkhamtheothang=dao.tansuatkham(month))
+
+    # , profit_stats = utils.profit_month_stats(month), total_month_profit = utils.total_profit_mont(month),
 
     def is_accessible(self):
         return current_user.is_authenticated and current_user.vaitro == UserRole.ADMIN

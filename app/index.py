@@ -12,11 +12,21 @@ from app.models import ChuyenNganh
 def index():
     return render_template('index.html')
 
-@app.route("/examine")
+@app.route("/examine", methods=['GET','POST'])
 def examine():
+    if request.method.__eq__('POST'): #Kiểm tra xem request gửi lên là get hay post
+        tenbn = request.form.get('bnname')
+        sdtbn = request.form.get('bnphone')
+        emailbn = request.form.get('bnemail')
+        sinhbn = request.form.get('bnsinh')
+        gioibn = request.form.get('bngioi')
+        trieuchungbn = request.form.get('bntrieuchung')
+        lichkhambn = request.form.get('bnlichkham')
+
     ngaycls = dao.get_remaining_days()
     cns = dao.load_object(ChuyenNganh)
-    return render_template('examine.html', chuyennganhs = cns, ngayconlai = ngaycls)
+    doctors = dao.load_bstrucca()
+    return render_template('examine.html', chuyennganhs = cns, ngayconlai = ngaycls, doctors = doctors)
 
 @app.route("/api/doctors/<chuyennganh>", methods=['POST'])
 def api_doctors(chuyennganh):
@@ -39,8 +49,18 @@ def api_doctors(chuyennganh):
         print(f"[ERROR] Server error in api_doctors: {e}")  # Log chi tiết lỗi
         return jsonify({"error": "Server error occurred", "details": str(e)}), 500
 
+@app.route('/api/checksdt/<sdt>', methods=['POST'])
+def api_check_sdt(sdt):
+    try:
+        # Kiểm tra thông tin bệnh nhân
+        result, patient_info = dao.check_benhnhan(str(sdt))
+        return {
+            "result": result,
+            "patient_info": patient_info
+        }
 
-
+    except Exception as e:
+        return {"error": str(e)}, 500
 
 @app.route("/login", methods=['GET', 'POST'])
 def login_process():

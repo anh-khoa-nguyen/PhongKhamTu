@@ -1,10 +1,228 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'admin/base.html'%}
 
-</body>
-</html>
+{%block body%}
+<h1 class="text-center text-info"> THỐNG KÊ BÁO CÁO QUẢN LÝ</h1>
+<br>
+<h3 class="text-info text-center ">THỐNG KÊ DOANH THU THEO THÁNG</h3>
+<div class="border-top border-dark">
+    <form>
+        <div class="form-group">
+            <label class="text-info font-weight-bold">Nhập Tháng Cần Thống Kê Doanh Thu</label>
+            <input type="number" min="1" max="12" class="form-control" name="month"/>
+        </div>
+        <input type="submit" value="Tìm Kiếm Theo Tháng" class="btn btn-info"/>
+    </form>
+</div>
+<br>
+<div class="row">
+    <div class="col-md-6 col-xs-12">
+        <table class="table table-hover table-bordered ">
+            <tr>
+                <th>Ngày</th>
+                <th>Số Bệnh Nhân Khám</th>
+                <th>Doanh Thu</th>
+                <th>Tỷ Lệ</th>
+            </tr>
+            <!--            {% for s in profit_stats %}-->
+            <!--            <tr>-->
+            <!--                <td>{{ s[0] }}</td>-->
+            <!--                <td>{{ s[1] }}</td>-->
+            <!--                <td>-->
+            <!--                    {% if s[2] %}-->
+            <!--                    {{ "{:,.1f}".format(s[2]) }} VND-->
+            <!--                    {% else %}-->
+            <!--                    0 VND-->
+            <!--                    {% endif %}-->
+            <!--                </td>-->
+            <!--                <td> {{ s[3] }}% </td>-->
+            <!--            </tr>-->
+            <!--            {% endfor %}-->
+        </table>
+
+        <span class="form-control">
+<!--            {%if total_month_profit %}-->
+            <!--                Tổng Doanh Thu:  {{ "{:,.1f}".format(total_month_profit) }} VND-->
+            <!--            {% else %}-->
+            <!--                0 VND-->
+            <!--            {% endif %}-->
+        </span>
+    </div>
+    <div class="col-md-6 col-xs-12">
+        <canvas id="profitMonthChart"></canvas>
+    </div>
+</div>
+
+
+<br>
+<br>
+<h3 class="text-info text-center ">THỐNG KÊ TẦN SUẤT KHÁM THEO THÁNG</h3>
+<div class="border-top border-dark">
+    <form>
+        <div class="form-group">
+            <label class="text-info font-weight-bold">Nhập Tháng Cần Thống Kê Tần Suất Khám</label>
+            <input type="number" min="1" max="12" class="form-control" name="month"/>
+        </div>
+        <input type="submit" value="Tìm Kiếm Theo Tháng" class="btn btn-info"/>
+    </form>
+</div>
+<br>
+<div class="row">
+    <div class="col-md-6 col-xs-12">
+        <table class="table table-hover table-bordered ">
+            <tr>
+                <th>Ngày</th>
+                <th>Số Bệnh Nhân Khám</th>
+            </tr>
+            {% for d in tansuatkhamtheothang %}
+            <tr>
+                <td>{{ d[0] }}</td>
+                <td>{{ d[1] }} lần</td>
+            </tr>
+            {% endfor %}
+        </table>
+
+    </div>
+    <div class="col-md-6 col-xs-12">
+        <canvas id="TanSuatKham"></canvas>
+    </div>
+</div>
+
+
+<br>
+<h3 class="text-info text-center ">THỐNG KÊ SỬ DỤNG THUỐC THEO THÁNG</h3>
+<div class="border-top border-dark">
+    <form>
+        <div class="form-group">
+            <label class="text-info font-weight-bold">Nhập Tháng Cần Thống Kê Tuần Suất Sử Dụng Thuốc</label>
+            <input type="number" min="1" max="12" class="form-control" name="monthMedicine"/>
+        </div>
+        <input type="submit" value="Tìm Kiếm Theo Tháng" class="btn btn-info"/>
+
+    </form>
+</div>
+<br>
+
+<div class="row">
+    <div class="col-md-6 col-xs-12">
+        <table class="table table-hover table-bordered ">
+            <tr>
+                <th>Thuốc</th>
+                <th>Đơn Vị</th>
+                <th>Số Lượng</th>
+                <th>Số Lần Kê Đơn</th>
+            </tr>
+            {% for m in medicine_stats %}
+            <tr>
+                <td>{{ m[0] }}</td>
+                <td>{{ m[1] }}</td>
+                <td>{{ m[2] }} {{ m[1] }}</td>
+                <td>{{ m[3] }} lần</td>
+            </tr>
+            {% endfor %}
+        </table>
+
+    </div>
+    <div class="col-md-6 col-xs-12">
+        <canvas id="Tansuatsdthuoc"></canvas>
+
+    </div>
+</div>
+
+
+<!--<div class="row">-->
+<!--    <div class="col-md-7 col-12">-->
+<!--        <table class="table">-->
+<!--            <tr>-->
+<!--                <th>Thời gian</th>-->
+<!--                <th>Doanh thu</th>-->
+<!--            </tr>-->
+
+<!--            {% for s in stats2 %}-->
+<!--            <tr>-->
+<!--                <td>{{ s[0] }}</td>-->
+<!--                <td>{{ s[1] }}</td>-->
+<!--            </tr>-->
+<!--            {% endfor %}-->
+<!--        </table>-->
+
+<!--    </div>-->
+<!--    <div class="col-md-5 col-12">-->
+<!--        <canvas id="myChart2"></canvas>-->
+<!--    </div>-->
+<!--</div>-->
+
+
+<!--<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>-->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    let data = [];
+    let labels = [];
+
+    let data2 = [];
+    let labels2 = [];
+
+    {% for m in medicine_stats %}
+    data.push({{ m[3] }});
+    labels.push('{{ m[0] }}')
+    {% endfor %}
+
+    {% for d in tansuatkhamtheothang %}
+    data2.push({{ d[1] }});
+    labels2.push('{{ d[0] }}')
+    {% endfor %}
+
+
+    function draw(ctx, data, labels){
+        new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: '# Thống kê tần suất sd thuốc theo tháng',
+            data: data,
+            borderWidth: 1,
+            backgroundColor: ['red','green','blue','gold','brown']
+          }]
+        },
+        options: {
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          }
+        }
+      });
+    }
+     function draw2(ctx, data, labels){
+        new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{label: '# Thống kê tần suất sd thuốc theo tháng',
+            data: data,
+            borderWidth: 1,
+            backgroundColor: ['red','green','blue','gold','brown']
+          }]
+        },
+        options: {
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          }
+        }
+      });
+    }
+
+    window.onload= function(){
+        const ctx = document.getElementById('Tansuatsdthuoc');
+        const ctx2 = document.getElementById('TanSuatKham');
+
+        draw(ctx, data, labels)
+        draw2(ctx2, data2, labels2)
+
+    }
+</script>
+
+
+{% endblock %}

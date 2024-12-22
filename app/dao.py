@@ -2,8 +2,10 @@ import datetime
 from datetime import date
 
 from app.models import User, HoaDon, PhieuKhamBenh, BenhNhan, ChuyenNganh, UserRole, LichKham, KhungGio  # Dùng DL trong bảng dữ liệu
+from app.models import PhieuKhamBenh, ChiTietPhieuKham, Thuoc, DonViThuoc
 from app import app, db  # Import để lấy các thông số cấu hình, db để thêm vào CSDL
 import hashlib
+from sqlalchemy import extract, func
 
 def get_day(input_date=None):
     """
@@ -176,7 +178,44 @@ def load_sobntoida():
     sobntoida = app.config['SO_BENH_NHAN_TRONG_NGAY']
     return sobntoida
 
+def dang_ky_kham(tenbn, sdtbn, emailbn, sinhbn, gioibn, trieuchungbn, lichkhambn):
+    u = User(ten=tenbn, sdt=sdtbn, ngaysinh=sinhbn, gioitinh=gioibn)
+
+def check_benhnhan(sdt):
+    """
+    Kiểm tra xem số điện thoại có tồn tại trong bảng BenhNhan.
+    Trả về (True, thông tin_bệnh_nhân) nếu tồn tại, ngược lại trả về (False, None).
+    """
+    benhnhan = BenhNhan.query.filter(BenhNhan.sdt == sdt).first()  # Tìm bệnh nhân theo số điện thoại
+    if benhnhan:
+        patient_info = {
+            "ten": benhnhan.ten,
+            "ngaysinh": benhnhan.ngaysinh,
+            "gioitinh": benhnhan.gioitinh,
+            "sdt": benhnhan.sdt,
+            "email": benhnhan.email
+        }
+        return True, patient_info
+    return False, None
+
+def medicine_rates_month_stats(month):
+    return db.session.query(Thuoc.ten,
+                            DonViThuoc.donvi,
+                            func.sum(ChiTietPhieuKham.soluongthuoc),
+                            func.count(ChiTietPhieuKham.thuoc_id)) \
+        .join(ChiTietPhieuKham, ChiTietPhieuKham.thuoc_id.__eq__(Thuoc.id)) \
+        .join(DonViThuoc).join(PhieuKhamBenh) \
+        .filter(extract('month', PhieuKhamBenh.ngaykham).__eq__(month)) \
+        .group_by(Thuoc.id).all()
+
+def tansuatkham(month):
+    return (db.session.query(extract('day', PhieuKhamBenh.ngaykham ),
+                            func.count(PhieuKhamBenh.id))) \
+            .filter(extract('month', PhieuKhamBenh.ngaykham).__eq__(month)) \
+            .group_by (extract('day', PhieuKhamBenh.ngaykham)) \
+            .order_by(extract('day', PhieuKhamBenh.ngaykham)).all()
 
 if __name__ == '__main__':  # Tự phát hiện cái bảng này chưa có và nó tạo ra
     with app.app_context():
-        print(load_bstrucca(3))
+        print(check_benhnhan('0123456781'))
+
