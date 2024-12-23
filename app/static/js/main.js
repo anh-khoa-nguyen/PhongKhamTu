@@ -18,51 +18,47 @@
 //    });
 //}
 
+
+
 function updateDoctorsTable() {
-    document.addEventListener('DOMContentLoaded', function () {
+
      // Lấy giá trị ngày khám
-        console.log(ok)
-        const radioButtons = document.getElementsByName("bnngaykham");
-        const selectedDate = selectedDateEl ? selectedDateEl.value : null; // Nếu có thì lấy giá trị, ngược lại null
+    const radioNgayKham = document.querySelector('input[name="bnngaykham"]:checked');
+    const ngaykham = radioNgayKham ? radioNgayKham.value : null; // Nếu có thì lấy giá trị, ngược lại null
 
-        console.log(selectedDateEl)
+    // Lấy giá trị chuyên ngành
+    const chuyennganh = document.getElementById('chuyennganhSelect').value;
 
+    // Kiểm tra nếu cả hai giá trị đều không được chọn
+    if (!radioNgayKham) {
+        console.warn('Vui lòng chọn ngày khám hoặc chuyên ngành');
+        return;
+    }
 
+    // Chuẩn bị dữ liệu để gửi đến server
+    const requestData = {
+        ngay: ngaykham, // truyền ngày
+        chuyennganh: chuyennganh // truyền chuyên ngành
+    };
 
-        // Lấy giá trị chuyên ngành
-        const selectedSpecialty = document.getElementById('chuyennganhSelect').value;
+    console.log('Dữ liệu gửi lên server:', requestData);
 
-        // Kiểm tra nếu cả hai giá trị đều không được chọn
-        if (!selectedDate && !selectedSpecialty) {
-            console.warn('Vui lòng chọn ngày khám hoặc chuyên ngành');
-            return;
-        }
-
-        // Chuẩn bị dữ liệu để gửi đến server
-        const requestData = {
-            ngay: selectedDate, // truyền ngày
-            chuyennganh: selectedSpecialty // truyền chuyên ngành
-        };
-
-        console.log('Dữ liệu gửi lên server:', requestData);
-
-        // Gửi request lên server
-        fetch('/api/filter_doctors', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(requestData)
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log('Danh sách bác sĩ được trả về:', data);
-            changeDoctorsTable(data); // Cập nhật giao diện bảng bác sĩ
-        })
-        .catch(error => {
-            console.error('Lỗi khi fetch bác sĩ:', error);
-        });
+    // Gửi request lên server
+    fetch('/api/filter_doctors', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestData)
     })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Danh sách bác sĩ được trả về:', data);
+        changeDoctorsTable(data); // Cập nhật giao diện bảng bác sĩ
+    })
+    .catch(error => {
+        console.error('Lỗi khi fetch bác sĩ:', error);
+    });
 }
 
 
@@ -80,7 +76,7 @@ function changeDoctorsTable(data){
                     <td>${doctor.ten}</td>
                     <td>${doctor.chuyennganh}</td>
                     <td>${doctor.khoangthoigian}</td>
-                    <td><input type="radio" name="doctor" value=""></td>
+                    <td><input type="radio" name="bnbacsi_giokham" value="${doctor.ten}|${doctor.khunggioid}"></td>
                 </tr>
             `;
             // Thêm hàng mới vào bảng
@@ -131,11 +127,11 @@ function checkSDT() {
             document.getElementById(patientInfo.gioitinh === 'Nam' ? 'male' : 'female').checked = true;
 
             // Disable các trường đã điền
-            document.getElementById('bnname').disabled = true;
-            document.getElementById('bnemail').disabled = true;
-            document.getElementById('bnsinh').disabled = true;
-            document.getElementById('male').disabled = true;
-            document.getElementById('female').disabled = true;
+//            document.getElementById('bnname').disabled = true;
+//            document.getElementById('bnemail').disabled = true;
+//            document.getElementById('bnsinh').disabled = true;
+//            document.getElementById('male').disabled = true;
+//            document.getElementById('female').disabled = true;
 
             statusDiv.style.color = 'green';
             statusDiv.textContent = `Thông tin đã được điền tự động`;

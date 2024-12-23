@@ -48,6 +48,9 @@ def examine():
             tenbs, giokhambn = tenbs_giokhambn.split('|')
             bacsikhambn = (dao.load_bs(tenbs=tenbs))[0].id
 
+            # import pdb
+            # pdb.set_trace()
+
             # Kiểm tra thông tin bắt buộc
             if not tenbn or not sdtbn or not sinhbn or not ngaykhambn or not bacsikhambn:
                 err_msg = 'Vui lòng nhập đầy đủ thông tin bắt buộc'
@@ -103,9 +106,10 @@ def examine():
 @app.route('/api/filter_doctors', methods=['POST'])
 def filter_doctors():
     try:
-        request_data = request.get_json()
-        ngay = request_data.get('ngay')  # Ngày khám
-        chuyennganh = request_data.get('chuyennganh')  # Chuyên ngành
+        data = request.get_json()
+        ngay = data.get('ngay')  # Ngày khám
+        chuyennganh = data.get('chuyennganh')  # Chuyên ngành
+
 
         # Gọi hàm load_bstrucca để lấy danh sách bác sĩ
         doctors = dao.load_bstrucca(
@@ -122,6 +126,9 @@ def filter_doctors():
                 "khoangthoigian": doctor.khunggio_ten,
                 "khunggioid": doctor.khunggio_id
             })
+        #
+        # import pdb
+        # pdb.set_trace()
 
         return jsonify(doctors_list), 200  # Trả về danh sách JSON với mã trạng thái OK
 

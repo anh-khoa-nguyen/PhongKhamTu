@@ -6,9 +6,13 @@
   <component name="ChangeListManager">
     <list default="true" id="53f2377e-1f22-4aa3-9d0e-fe6bb170842d" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/__init__.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/admin.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/dao.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/dao.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/index.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/index.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/static/js/main.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/static/js/main.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/templates/admin/lapphieukham.html" beforeDir="false" afterPath="$PROJECT_DIR$/app/templates/admin/lapphieukham.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/templates/admin/bntoida.html" beforeDir="false" afterPath="$PROJECT_DIR$/app/templates/admin/bntoida.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/templates/examine.html" beforeDir="false" afterPath="$PROJECT_DIR$/app/templates/examine.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />

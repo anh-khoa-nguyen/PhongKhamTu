@@ -12,6 +12,7 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:%s@localhost/clini
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True
 app.config["SO_PHAN_TU"] = 10  # Thông số cấu hình số sản phẩm 1 trang (8)
 app.config["SO_BENH_NHAN_TRONG_NGAY"] = 20
+app.config["SO_TIEN_KHAM"] = 100000
 
 db = SQLAlchemy(app)
 login = LoginManager(app)  # Nguyên tắc của login cần phải có 1 cái hàm bên index.py

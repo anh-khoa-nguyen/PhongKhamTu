@@ -120,8 +120,8 @@ class Thuoc(db.Model):
     gia = Column(Double)
     donvithuoc_id = Column(Integer, ForeignKey(DonViThuoc.id), nullable=False)
     loaithuocs = db.relationship('LoaiThuoc', secondary="thuoc_thuoc_loai", backref=db.backref('thuoc', lazy='dynamic'))
-    chitietphieukhams =relationship('ChiTietPhieuKham', backref='thuoc',
-                                  lazy=True)
+    chitietphieukhams = relationship('ChiTietPhieuKham', backref='thuoc',
+                                     lazy='dynamic')
 
     def __str__(self):
         return self.ten
@@ -158,22 +158,8 @@ class HoaDon(db.Model):
     chitiethoadons = relationship('ChiTietHoaDon', backref='hoadon', lazy=True)
 
 
-class DichVu(db.Model):
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    ten = Column(String(50))
-    gia = Column(Double)
-
-
-class CacDichVuSD(db.Model):
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    phieukhambenh_id = Column(Integer, ForeignKey(PhieuKhamBenh.id), nullable=False)
-    dichvu_id = Column(Integer, ForeignKey(DichVu.id), nullable=False)
-    chitiethoadons = relationship('ChiTietHoaDon', backref='cacdichvusd', lazy=True)
-
-
 class ChiTietHoaDon(db.Model):
     id = Column(Integer, primary_key=True, autoincrement=True)
-    cacdichvu_id = Column(Integer, ForeignKey(CacDichVuSD.id), nullable=False)
     giathuoc = Column(Double)
     giadichvu = Column(Double)
     hoadon_id = Column(Integer, ForeignKey(HoaDon.id), nullable=False)
@@ -307,7 +293,10 @@ if __name__ == '__main__':  # Tự phát hiện cái bảng này chưa có và n
         dvt1 = DonViThuoc(donvi='Viên')
         dvt2 = DonViThuoc(donvi='Gram')
         dvt3 = DonViThuoc(donvi='Tube')
-        db.session.add_all([dvt1, dvt2, dvt3])
+        dvt4 = DonViThuoc(donvi='Ống')
+        dvt5 = DonViThuoc(donvi='Gói')
+        dvt6 = DonViThuoc(donvi='Lọ')
+        db.session.add_all([dvt1, dvt2, dvt3, dvt4, dvt5, dvt6])
         db.session.commit()
 
         # Thuốc
@@ -360,7 +349,11 @@ if __name__ == '__main__':  # Tự phát hiện cái bảng này chưa có và n
         lk1 = LichKham(user_id=2, khunggio_id=1, danhsachkham_id=1, isTrong=True)
         lk2 = LichKham(user_id=2, khunggio_id=2, danhsachkham_id=1, isTrong=True)
         lk3 = LichKham(user_id=2, khunggio_id=3, danhsachkham_id=1, isTrong=True)
-        db.session.add_all([lk1, lk2, lk3])
+
+        lk4 = LichKham(user_id=2, khunggio_id=1, danhsachkham_id=1, isTrong=True, ngay='2024-12-24')
+        lk5 = LichKham(user_id=2, khunggio_id=2, danhsachkham_id=1, isTrong=True, ngay='2024-12-25')
+        lk6 = LichKham(user_id=2, khunggio_id=3, danhsachkham_id=1, isTrong=True, ngay='2024-12-26')
+        db.session.add_all([lk1, lk2, lk3, lk4, lk5, lk6])
         db.session.commit()
 
         # Danh sách khám có bệnh nhân
@@ -370,19 +363,6 @@ if __name__ == '__main__':  # Tự phát hiện cái bảng này chưa có và n
         db.session.add_all([dskcbn1, dskcbn2, dskcbn3])
         db.session.commit()
 
-        # Dịch vụ
-        dv1 = DichVu(ten='Chụp X-Quang', gia=150000)
-        dv2 = DichVu(ten='Khám da liễu', gia=200000)
-        dv3 = DichVu(ten='Khám tim mạch', gia=200000)
-        db.session.add_all([dv1, dv2, dv3])
-        db.session.commit()
-
-        # Các dịch vụ
-        cdv1 = CacDichVuSD(phieukhambenh_id=1, dichvu_id=1)
-        cdv2 = CacDichVuSD(phieukhambenh_id=1, dichvu_id=2)
-        cdv3 = CacDichVuSD(phieukhambenh_id=2, dichvu_id=3)
-        db.session.add_all([cdv1, cdv2, cdv3])
-        db.session.commit()
 
         # Các bình luận
         bl1 = BinhLuan(ten='Yến Hoàng', nghenghiep='Kế Toán', binhluan='bệnh viện sạch sẽ, dịch vụ nhanh chóng',

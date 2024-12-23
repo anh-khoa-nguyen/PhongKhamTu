@@ -192,6 +192,10 @@ def load_sobntoida():
     sobntoida = app.config['SO_BENH_NHAN_TRONG_NGAY']
     return sobntoida
 
+def load_sotienkham():
+    sotienkham = app.config['SO_TIEN_KHAM']
+    return sotienkham
+
 def check_benhnhan(sdt):
     """
     Kiểm tra xem số điện thoại có tồn tại trong bảng BenhNhan.
@@ -200,6 +204,7 @@ def check_benhnhan(sdt):
     benhnhan = BenhNhan.query.filter(BenhNhan.sdt == sdt).first()  # Tìm bệnh nhân theo số điện thoại
     if benhnhan:
         patient_info = {
+            "id": benhnhan.id,
             "ten": benhnhan.ten,
             "ngaysinh": benhnhan.ngaysinh,
             "gioitinh": benhnhan.gioitinh,
