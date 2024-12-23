@@ -119,7 +119,7 @@
                                             {% for ngay, ngay_cu_the in ngayconlai %}
                                             <td>
                                                 <input type="radio" id="thu{{ ngay }}" name="bnngaykham"
-                                                       value="{{ ngay_cu_the }}" onchange="updateDoctorsTable()" required>
+                                                       value="{{ ngay_cu_the }}" onchange="updateDoctorsTable(this)" required>
                                             </td>
                                             {% endfor %}
                                         </tr>
@@ -203,4 +203,8 @@
 </div>
 </body>
 
+
+<script !src="">
+
+</script>
 {% endblock %}

@@ -5,7 +5,8 @@ from flask_admin.contrib.sqla.fields import QuerySelectField
 from flask_admin.form import Select2Widget
 from wtforms.fields.choices import SelectField
 
-from app.models import User, UserRole, Thuoc, LoaiThuoc, DichVu, HoaDon, ChuyenNganh, DonViThuoc
+from app.models import User, UserRole, Thuoc, LoaiThuoc, DichVu, HoaDon, ChuyenNganh, DonViThuoc, ThuocThuocLoai, \
+    BenhNhan
 from flask_admin import Admin, BaseView, expose #View bình thường gọi là BaseView
 from app import app, db #Chèn db để thêm xóa sửa db
 from flask_admin.contrib.sqla import ModelView #Quản trị thằng nào đó thì import thằng đó vào, Model-View gắn liền với 1 view - 1 model,
@@ -37,7 +38,26 @@ class TNView(BaseView):
 class LPKView(BSView):
     @expose('/')
     def index(self):
-        return self.render('admin/lapphieukham.html')
+        # Truy vấn tất cả bệnh nhân từ cơ sở dữ liệu
+        current_time = datetime.now().strftime("%H:%M:%S, %d/%m/%Y")
+        patients = BenhNhan.query.all()
+        drugs = Thuoc.query.all()
+        drugs = db.session.query(
+            Thuoc.id,
+            Thuoc.ten.label('name'),  # Tên thuốc
+            Thuoc.gia.label('price'),  # Giá thuốc
+            DonViThuoc.donvi.label('unit'),  # Đơn vị tính thuốc
+            ThuocThuocLoai.tonkho.label('stock')  # Số lượng tồn kho
+        ).join(
+            DonViThuoc, Thuoc.donvithuoc_id == DonViThuoc.id
+        ).join(
+            ThuocThuocLoai, Thuoc.id == ThuocThuocLoai.thuoc_id
+        ).all()
+
+        return self.render('admin/lapphieukham.html', patients=patients, drugs=drugs, current_time=current_time)
+
+
+
 admin.add_view(LPKView(name='Lập phiếu khám'))
 
 #View của Y tá:
