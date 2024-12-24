@@ -10,6 +10,7 @@
         <div class="col-xl-3 float-end">
             <div class="font-weight-bold font-italic">Phòng khám MIYEK</div>
             <div class="font-weight-bold font-italic">Số bệnh nhân tối đa: {{sobntoida}}</div>
+            <div class="font-weight-bold font-italic" id="status">Tình trạng: </div>
         </div>
         <hr>
     </div>
@@ -22,13 +23,14 @@
                     <path d="M8.5 4.5a.5.5 0 0 0-1 0v.634l-.549-.317a.5.5 0 1 0-.5.866L7 6l-.549.317a.5.5 0 1 0 .5.866l.549-.317V7.5a.5.5 0 1 0 1 0v-.634l.549.317a.5.5 0 1 0 .5-.866L9 6l.549-.317a.5.5 0 1 0-.5-.866l-.549.317V4.5zM5.5 9a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1h-5zm0 2a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1h-5z"></path>
                     <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2zm10-1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1z"></path>
                 </svg>
-                <form action="post" action="/hoadon">
-                    <p class="pt-0 font-weight-bold">Chọn ngày:</p>
-                    <div class="justify-content-center d-flex center">
-                        <input type="date" name="datepicker">
-                        <button class="btn btn-primary ml-3">Chọn</button>
-                    </div>
-                </form>
+
+                <p class="pt-0 font-weight-bold">Chọn ngày:</p>
+                <div class="justify-content-center d-flex center">
+                    <input type="date" class="rounded bg-light" id="chonngay" name="datepicker" value="{{ngayhientai}}"  required="" onchange="disableChonNgay()">
+                    <button class="btn btn-primary ml-3" onclick="handleChon()">Chọn</button>
+                    <button class="btn btn-secondary ml-3" id="createListButton" onclick="createDanhSachKham()" disabled>Lập danh sách</button>
+                </div>
+
             </div>
 
         </div>
@@ -51,6 +53,8 @@
                     <th scope="col" class="text-center">Giới tính</th>
                     <th scope="col" class="text-center">Ngày sinh</th>
                     <th scope="col" class="text-center">SĐT</th>
+                    <th scope="col" class="text-center">Bác sĩ khám</th>
+                    <th scope="col" class="text-center">Chuyên khoa</th>
                     <!--                    <th scope="col" class="text-center"></th>-->
                 </tr>
                 </thead>
@@ -157,5 +161,7 @@
         </div>
     </div>
 </div>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
 
 {% endblock %}

@@ -353,7 +353,7 @@
                                 <input type="radio" name="rating" value="1" id="1"><label for="1">☆</label>
                             </div>
                         </div>
-                        <h5 class="review-count">245 Đánh giá</h5>
+                        <h5 class="review-count">{{ total_comments }} bình luận</h5>
                     </div>
 
                     <button type="submit" class="btn btn-primary ">Submit</button>
@@ -369,5 +369,12 @@
 
     </div>
 </div>
+<script>
+    window.onload = function(){
+        let dates = document.getElementsByClassName("date");
+        for (let d of dates)
+            d.innerText = moment(d.innerText).locale("vi").fromNow();
 
+    }
+</script>
 {% endblock %}

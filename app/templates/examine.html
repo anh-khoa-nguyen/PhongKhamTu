@@ -55,7 +55,7 @@
                                 <div class="col-sm-12 text-start">
                                     <label class="form-label text-black" for="bnname">Họ và tên ∗</label>
                                     <input type="text" id="bnname" class="form-control bg-light" name="bnname" value=""
-                                           required>
+                                            required>
                                 </div>
 
                                 <!-- Email -->
@@ -101,26 +101,33 @@
                                         <thead>
                                         <tr>
                                             <th scope="col">Thứ</th>
-                                            {% for ngay, _ in ngayconlai %}
-                                            <th scope="col">{{ 'CN' if ngay == 8 else ngay }}</th>
+                                            {% for thu, _, _ in ngayconlai %}
+                                            <th scope="col">{{ 'CN' if thu == 8 else thu }}</th>
                                             {% endfor %}
                                         </tr>
                                         </thead>
                                         <tbody>
                                         <tr>
                                             <th scope="row">Ngày</th>
-                                            {% for _, ngay_cu_the in ngayconlai %}
-                                            <!--                                            YYYY-MM-DD lấy 2 ký tự cuối, 2 kí tự giữa-->
+                                            {% for _, ngay_cu_the, _ in ngayconlai %}
+                                            <!-- Trích xuất ngày tháng từ chuỗi YYYY-MM-DD -->
                                             <td>{{ ngay_cu_the[8:10] }}/{{ ngay_cu_the[5:7] }}</td>
                                             {% endfor %}
                                         </tr>
                                         <tr>
                                             <th scope="row">Chọn</th>
-                                            {% for ngay, ngay_cu_the in ngayconlai %}
+                                            {% for thu, ngay_cu_the, tinh_trang in ngayconlai %}
                                             <td>
-                                                <input type="radio" id="thu{{ ngay }}" name="bnngaykham"
-                                                       value="{{ ngay_cu_the }}" onchange="updateDoctorsTable()"
-                                                       required {% if loop.first %}checked{% endif %}>
+                                                <input  type="radio"
+                                                        id="thu{{ thu }}"
+                                                        name="bnngaykham"
+                                                        value="{{ ngay_cu_the }}"
+                                                        onchange="updateDoctorsTable();updateTinhTrangNgay()"
+                                                        required
+                                                        {% if not tinh_trang %}disabled{% endif %}
+                                                        {% if loop.first and tinh_trang %}checked{% endif %}>
+
+                                                <!-- Tự động check radio đầu tiên nếu có thể chọn -->
                                             </td>
                                             {% endfor %}
                                         </tr>

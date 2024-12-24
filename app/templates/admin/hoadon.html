@@ -25,8 +25,8 @@
                 <form action="post" action="/hoadon">
                     <p class="pt-0 font-weight-bold">Chọn ngày:</p>
                     <div class="justify-content-center d-flex center">
-                        <input type="date" name="datepicker">
-                        <button class="btn btn-primary ml-3">Chọn</button>
+                        <input type="date" name="datepicker" id="chonngay">
+                        <button class="btn btn-primary ml-3" onclick="handleChon2()">Chọn</button>
                     </div>
                 </form>
             </div>
@@ -47,6 +47,7 @@
                 <tr>
                     <th scope="col" class="text-center">STT</th>
                     <th scope="col" class="text-center">Ngày khám</th>
+                    <th scope="col" class="text-center">Giá tiền khám</th>
                     <th scope="col" class="text-center">Họ tên</th>
                     <th scope="col" class="text-center">Giới tính</th>
                     <th scope="col" class="text-center">Ngày sinh</th>
@@ -60,10 +61,11 @@
                 <tr>
                     <td>{{h.id}}</td>
                     <td>{{h.ngaykham}}</td>
+                    <td>{{ "{:,.0f}".format(h['gia_kham']) }} VND</td>
                     <td>{{h.ten}}</td>
                     <td>{% if h.gioitinh == 0 %} Nam {% else %} Nữ {% endif %}</td>
                     <td>{{h.ngaysinh}}</td>
-                    <td>{{h.value}}</td>
+                    <td>{{ "{:,.0f}".format(h.value)}} VND</td>
                     <td>
                         {% if h.isThanhtoan == 0 %}
                         <button
@@ -73,6 +75,7 @@
                                 data-id="{{ h.id }}"
                                 data-ten="{{ h.ten }}"
                                 data-sdt="{{ h.sdt }}"
+                                data-giatienkham = "{{ h['gia_kham'] }}"
                                 data-value="{{ h.value }}"
                                 data-ngaysinh="{{ h.ngaysinh }}"
                                 data-ngaykham="{{ h.ngaykham }}">
@@ -173,16 +176,21 @@
             const hoadonId = button.getAttribute("data-id");
             const ten = button.getAttribute("data-ten");
             const sdt = button.getAttribute("data-sdt");
-            const value = button.getAttribute("data-value");
+
             const ngaysinh = button.getAttribute("data-ngaysinh");
             const ngaykham = button.getAttribute("data-ngaykham");
+
+            const value = parseFloat(button.getAttribute("data-value")); // Convert to number
+            const giatienkham = parseFloat(button.getAttribute("data-giatienkham"));
+            console.log(value)
+            console.log(giatienkham)
 
             // Gán dữ liệu vào modal
             document.querySelector("#exampleModalLabel").textContent = `Chi tiết hóa đơn #${hoadonId}`;
             document.querySelector("#modal-mahoadon").textContent = hoadonId;
             document.querySelector("#modal-tenkhachhang").textContent = ten;
             document.querySelector("#modal-sdt").textContent = sdt;
-            document.querySelector("#modal-tongtien").textContent = value;
+            document.querySelector("#modal-tongtien").textContent = (value + giatienkham).toLocaleString();;
             document.querySelector("#modal-ngaysinh").textContent = ngaysinh;
             document.querySelector("#modal-ngaykham").textContent = ngaykham;
         });

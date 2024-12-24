@@ -94,3 +94,12 @@ input::-webkit-inner-spin-button {
      font-weight: bold;
 }
 
+/*
+input[readonly]{
+  border-color: darkgrey;
+  border-style: solid;
+  border-width: 1px;
+  background-color: rgb(235, 235, 228);
+  color: rgb(84, 84, 84);
+  padding: 2px 0px;
+}

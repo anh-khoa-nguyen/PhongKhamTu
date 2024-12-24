@@ -5,23 +5,20 @@ from app import app, login
 
 import dao, json
 from flask_login import login_user, logout_user #Ghi nhận trạng thái login, logout của session (Một phiên)
-
-from app.dao import count_so_phan_tu
-from app.models import ChuyenNganh, User
+from app.models import ChuyenNganh, User, BinhLuan
 
 
 @app.route("/", methods=['GET','POST'])
 def index():
     err_msg = None
+    total_comments = 0
     if request.method.__eq__('POST'):
         ten = request.form.get('name')
         nghenghiep = request.form.get('nghenghiep')
         binhluan = request.form.get('binhluan')
         avatar = request.files.get('avatar')
         star_value = request.form.get('rating')
-        #
-        # import pdb
-        # pdb.set_trace()
+
 
         dao.add_comment(avatar=avatar, ten=ten, nghenghiep=nghenghiep, binhluan=binhluan, star_value=star_value)
 
@@ -29,7 +26,8 @@ def index():
             err_msg = 'Vui lòng nhập đầy đủ thông tin bắt buộc'
         else:
             err_msg = 'Những đánh giá của bạn là động lực cho chúng tôi'
-    return render_template('index.html', binhluan = dao.load_comments())
+    total_comments = dao.count_so_phan_tu(BinhLuan)
+    return render_template('index.html', binhluan = dao.load_comments(), total_comments=total_comments)
 
 @app.route("/examine", methods=['GET', 'POST'])
 def examine():
@@ -136,7 +134,6 @@ def filter_doctors():
         print(f'Lỗi khi xử lý filter_doctors: {e}')
         return jsonify({"error": "Lỗi khi xử lý filter_doctors", "details": str(e)}), 500
 
-
 @app.route('/api/checksdt/<sdt>', methods=['POST'])
 def api_check_sdt(sdt):
     try:
@@ -156,6 +153,82 @@ def api_check_sdt(sdt):
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500  # Trả về mã HTTP 500 nếu có lỗi khác
+
+@app.route('/api/checkdanhsach/<ngay>', methods=['POST'])
+def check_danh_sach_kham(ngay):
+    try:
+        # Gọi hàm tạo danh sách khám từ DAO
+        phieu_dat_lich = dao.check_danhsachkham(ngay)
+
+        # Trả về danh sách lọc được
+        result = [{
+            "ten": p.benhnhan.ten,
+            "ngaydatlich": p.ngaydatlich.strftime('%d/%m/%Y'),
+            "gioitinh": p.benhnhan.gioitinh,
+            "ngaysinh": p.benhnhan.ngaysinh.strftime('%d/%m/%Y'),
+            "sdt": p.benhnhan.sdt,
+            "bacsikham": p.user.ten,
+            "chuyennganh": p.user.chuyennganh.ten
+        } for p in phieu_dat_lich]
+
+        # import pdb
+        # pdb.set_trace()
+
+        return jsonify(result), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+from flask_login import current_user
+
+
+@app.route('/api/taodanhsach/<ngay>', methods=['POST'])
+def api_create_danhsachkham(ngay):
+    """
+    API tạo danh sách khám và liên kết các phiếu đặt lịch vào danh sách đó.
+    """
+    try:
+        # Kiểm tra nếu người dùng chưa đăng nhập
+        if not current_user.is_authenticated:
+            return jsonify({"error": "Người dùng chưa đăng nhập!"}), 401
+
+        # Lấy ID của người dùng từ current_user
+        user_id = current_user.id
+
+        # Gọi hàm xử lý từ DAO (file dao.py)
+        dao.create_danhsachkham(user_id, ngay)
+
+        return jsonify({
+            "message": "Lập danh sách khám thành công!",
+        }), 200
+
+    except Exception as e:
+        return jsonify({"error": f"Lỗi xảy ra: {str(e)}"}), 500
+
+@app.route('/api/checkdanhsachhd/<ngay>', methods=['POST'])
+def check_danh_sach_kham(ngay):
+    try:
+        # Gọi hàm tạo danh sách khám từ DAO
+        phieu_dat_lich = dao.check_danhsachkham(ngay)
+
+        # Trả về danh sách lọc được
+        result = [{
+            "ten": p.benhnhan.ten,
+            "ngaydatlich": p.ngaydatlich.strftime('%d/%m/%Y'),
+            "gioitinh": p.benhnhan.gioitinh,
+            "ngaysinh": p.benhnhan.ngaysinh.strftime('%d/%m/%Y'),
+            "sdt": p.benhnhan.sdt,
+            "bacsikham": p.user.ten,
+            "chuyennganh": p.user.chuyennganh.ten
+        } for p in phieu_dat_lich]
+
+        # import pdb
+        # pdb.set_trace()
+
+        return jsonify(result), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+from flask_login import current_user
 
 @app.route("/login", methods=['GET', 'POST'])
 def login_process():
@@ -245,6 +318,53 @@ def logout_process():
 @login.user_loader #Hàm này sẽ tự gọi khi hàm dưới chứng thực thành công
 def get_user_by_id(user_id):
     return dao.get_user_by_id(user_id) #Flask login tự gọi
+
+@app.route('/update-max-patients', methods=['POST'])
+def update_max_patients():
+    from flask import request, jsonify
+
+    max_patients = request.form.get("maxPatients")
+
+    if not max_patients:
+        return jsonify({"success": False, "message": "Dữ liệu cần thiết không được gửi (maxPatients)."}), 400
+
+    try:
+        max_patients = int(max_patients)  # Chuyển đổi thành số nguyên
+        if max_patients <= 0:
+            return jsonify({"success": False, "message": "Giá trị phải lớn hơn 0!"}), 400
+
+        app.config['SO_BENH_NHAN_TRONG_NGAY'] = max_patients  # Cập nhật vào cấu hình (hoặc lưu DB)
+
+        return jsonify({
+            "success": True,
+            "message": "Cập nhật thành công!",
+            "sobntoida": max_patients
+        }), 200  # Mã HTTP thành công
+    except ValueError:
+        return jsonify({"success": False, "message": "Giá trị maxPatients không hợp lệ!"}), 400
+
+@app.route('/update-price', methods=['POST'])
+def update_price():
+    from flask import request, jsonify
+
+    new_price = request.form.get("price",type=int)
+
+    if not new_price:
+        return jsonify({"success": False, "message": "Dữ liệu cần thiết không được gửi (new_price)."}), 400
+    try:
+        new_price = int(new_price)  # Chuyển đổi thành số nguyên
+        if new_price <= 1000:
+            return jsonify({"success": False, "message": "Giá trị phải lớn hơn 1000!"}), 400
+
+        app.config['SO_TIEN_KHAM'] = new_price  # Cập nhật vào cấu hình (hoặc lưu DB)
+        formatted_price = f"{new_price:,}"
+        return jsonify({
+            "success": True,
+            "message": "Cập nhật thành công!",
+            "sotienkham": formatted_price
+        }), 200  # Mã HTTP thành công
+    except ValueError:
+        return jsonify({"success": False, "message": "Giá trị maxPatients không hợp lệ!"}), 400
 
 if __name__ == '__main__':
     from app import admin

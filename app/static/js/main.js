@@ -126,12 +126,18 @@ function checkSDT() {
             // Kiểm tra và đánh dấu giới tính
             document.getElementById(patientInfo.gioitinh === 'Nam' ? 'male' : 'female').checked = true;
 
-            // Disable các trường đã điền
-//            document.getElementById('bnname').disabled = true;
-//            document.getElementById('bnemail').disabled = true;
-//            document.getElementById('bnsinh').disabled = true;
-//            document.getElementById('male').disabled = true;
-//            document.getElementById('female').disabled = true;
+            //Disable các trường đã điền
+            document.getElementById('bnname').setAttribute('readonly', 'readonly');
+            document.getElementById('bnemail').setAttribute('readonly', 'readonly');
+            document.getElementById('bnsinh').setAttribute('readonly', 'readonly');
+            // Đặt radio buttons thành "read-only" bằng cách ngăn sự kiện click
+            document.getElementById('male').addEventListener('click', function(event) {
+                event.preventDefault(); // Ngăn không cho thực hiện thay đổi
+            });
+
+            document.getElementById('female').addEventListener('click', function(event) {
+                event.preventDefault(); // Ngăn không cho thực hiện thay đổi
+            });
 
             statusDiv.style.color = 'green';
             statusDiv.textContent = `Thông tin đã được điền tự động`;
@@ -145,6 +151,177 @@ function checkSDT() {
         console.error('Error:', error); // Log lỗi vào console (để debug)
     });
 }
+
+function handleChon() {
+    const dateInput = document.getElementById("chonngay");
+    const selectedDate = dateInput.value;
+
+    if (!selectedDate) {
+        alert("Vui lòng chọn ngày trước khi tiếp tục!");
+        return;
+    }
+
+    fetch(`/api/checkdanhsach/${selectedDate}`, { method: "POST" })
+        .then(response => response.json())
+        .then(data => {
+            renderDanhSachKham(data);
+        })
+        .catch(error => {
+            console.error("Lỗi khi gửi yêu cầu đến API:", error);
+        });
+}
+
+function handleChon2() {
+    const dateInput = document.getElementById("chonngay");
+    const selectedDate = dateInput.value;
+
+    if (!selectedDate) {
+        alert("Vui lòng chọn ngày trước khi tiếp tục!");
+        return;
+    }
+
+    fetch(`/api/checkdanhsachhd/${selectedDate}`, { method: "POST" })
+        .then(response => response.json())
+        .then(data => {
+            renderDanhSachHD(data);
+        })
+        .catch(error => {
+            console.error("Lỗi khi gửi yêu cầu đến API:", error);
+        });
+}
+
+// Hàm render danh sách khám
+function renderDanhSachKham(data) {
+    const tableBody = document.querySelector("table tbody");
+    const createListButton = document.getElementById("createListButton"); // ID nút "Lập danh sách"
+
+    // Xóa dữ liệu cũ
+    tableBody.innerHTML = "";
+
+    if (data && data.length > 0) {
+        // Thêm dữ liệu mới vào bảng
+        data.forEach((item, index) => {
+            const row = `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td>${item.ten}</td>
+                    <td>${item.ngaydatlich}</td>
+                    <td>${item.gioitinh === 0 ? 'Nam' : 'Nữ'}</td>
+                    <td>${item.ngaysinh}</td>
+                    <td>${item.sdt}</td>
+                    <td>${item.bacsikham}</td>
+                    <td>${item.chuyennganh}</td>
+                </tr>
+            `;
+            tableBody.innerHTML += row;
+        });
+
+        createListButton.classList.remove("btn-secondary");
+        createListButton.classList.add("btn-primary");
+        createListButton.disabled = false; // Bật nút
+    } else {
+        // Trường hợp không có dữ liệu
+        tableBody.innerHTML = `<tr><td colspan="8">Không có dữ liệu hợp lệ</td></tr>`;
+
+        // Nếu không có dữ liệu, làm nút "Lập danh sách" bị vô hiệu hóa
+        if (createListButton) {
+            createListButton.classList.remove("btn-primary");
+            createListButton.classList.add("btn-secondary");
+            createListButton.disabled = true;
+        }
+    }
+}
+
+function disableChonNgay() {
+    const createListButton = document.getElementById("createListButton"); // Nút "Lập danh sách"
+
+    // Nếu nút đang là enabled với class btn-primary
+    createListButton.classList.remove("btn-primary");
+    createListButton.classList.add("btn-secondary");
+    createListButton.disabled = true; // Tắt nút
+}
+
+async function createDanhSachKham() {
+        try {
+            const ngay = document.getElementById("chonngay").value; // Lấy ngày từ input chọn
+
+            if (!ngay) {
+                alert("Vui lòng chọn ngày!");
+                return;
+            }
+
+            // Gọi API để lập danh sách khám
+            const response = await fetch(`/api/taodanhsach/${ngay}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ ngay }), // Gửi ngày cần lập danh sách khám
+            });
+
+            const result = await response.json();
+
+            if (response.status === 200) {
+                alert("Lập danh sách khám thành công!");
+
+                console.log(result); // Xem dữ liệu trả về
+                location.reload(); // Reload lại trang để cập nhật
+            } else {
+                alert(result.error || "Lỗi xảy ra khi lập danh sách khám!");
+            }
+        } catch (error) {
+            console.error("Lỗi khi tạo danh sách khám:", error);
+            alert("Lỗi không xác định!");
+        }
+    }
+
+    // Thêm sự kiện onclick vào nút "Lập danh sách"
+    document.getElementById("createListButton").onclick = createDanhSachKham;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 document.getElementById('ten').addEventListener('input', function() {
@@ -364,3 +541,4 @@ function calculateTotal() {
 window.onload = function() {
     onRowInputChange(); // Lắng nghe sự thay đổi trong bảng và tính tổng cộng khi có sự thay đổi
 };
+

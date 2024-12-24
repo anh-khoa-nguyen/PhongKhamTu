@@ -85,12 +85,14 @@ class BenhNhan(db.Model):
 
 class DanhSachKham(db.Model):
     id = Column(Integer, primary_key=True, autoincrement=True)
-    ngaylap = Column(DateTime, default=datetime.datetime.now())
+    ngaylap = Column(Date, default=datetime.datetime.now())
     user_id = Column(Integer, ForeignKey(User.id), nullable=False)
-    lichkhams = relationship('LichKham', backref='danhsachkham',
-                             lazy=True)
-    benhnhans = relationship('BenhNhan', secondary='ds_kham_co_benh_nhan', lazy='subquery',
-                             backref=db.backref('danhsachkhams', lazy=True))
+    # lichkhams = relationship('LichKham', backref='danhsachkham',
+    #                          lazy=True)
+    # benhnhans = relationship('BenhNhan', secondary='ds_kham_co_benh_nhan', lazy='subquery',
+    #                          backref=db.backref('danhsachkhams', lazy=True))
+
+    phieudatlichs = relationship('PhieuDatLich', backref='danhsachkham', lazy=True)
 
 
 class PhieuKhamBenh(db.Model):
@@ -114,18 +116,20 @@ class DonViThuoc(db.Model):
 
 
 class Thuoc(db.Model):
+
     id = Column(Integer, primary_key=True, autoincrement=True)
     ten = Column(String(50))
     tac_dung = Column(String(150))
     gia = Column(Double)
+    tonkho = Column(Integer)
     donvithuoc_id = Column(Integer, ForeignKey(DonViThuoc.id), nullable=False)
-    loaithuocs = db.relationship('LoaiThuoc', secondary="thuoc_thuoc_loai", backref=db.backref('thuoc', lazy='dynamic'))
+    loaithuocs = db.relationship('LoaiThuoc', secondary="thuoc_thuoc_loai",
+                                 backref=db.backref('thuoc', lazy='dynamic'))
     chitietphieukhams = relationship('ChiTietPhieuKham', backref='thuoc',
-                                     lazy='dynamic')
+                                     lazy='dynamic')  # - mối quan hệ này không cần tải và xử lý ngay lập tức.
 
     def __str__(self):
         return self.ten
-
 
 class LoaiThuoc(db.Model):
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -137,7 +141,6 @@ class LoaiThuoc(db.Model):
 
 class ThuocThuocLoai(db.Model):
     id = Column(Integer, primary_key=True, autoincrement=True)
-    tonkho = Column(Integer)
     thuoc_id = Column(Integer, ForeignKey(Thuoc.id), nullable=False)
     loaithuoc_id = Column(Integer, ForeignKey(LoaiThuoc.id), nullable=False)
 
@@ -155,7 +158,8 @@ class HoaDon(db.Model):
     phieukhambenh_id = Column(Integer, ForeignKey(PhieuKhamBenh.id), nullable=False)
     user_id = Column(Integer, ForeignKey(User.id), nullable=False)
     ngaytao = Column(DateTime, default=datetime.datetime.now())
-    chitiethoadons = relationship('ChiTietHoaDon', backref='hoadon', lazy=True)
+    # chitiethoadons = relationship('ChiTietHoaDon', backref='hoadon', lazy=True)
+    gia_kham = db.Column(db.Integer, nullable=False, default=app.config['SO_TIEN_KHAM'])
 
 
 class ChiTietHoaDon(db.Model):
@@ -165,10 +169,10 @@ class ChiTietHoaDon(db.Model):
     hoadon_id = Column(Integer, ForeignKey(HoaDon.id), nullable=False)
 
 
-class DSKhamCoBenhNhan(db.Model):
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    danhsachkham_id = Column(Integer, ForeignKey(DanhSachKham.id), nullable=False)
-    benhnhan_id = Column(Integer, ForeignKey(BenhNhan.id), nullable=False)
+# class DSKhamCoBenhNhan(db.Model):
+#     id = Column(Integer, primary_key=True, autoincrement=True)
+#     danhsachkham_id = Column(Integer, ForeignKey(DanhSachKham.id), nullable=False)
+#     benhnhan_id = Column(Integer, ForeignKey(BenhNhan.id), nullable=False)
 
 
 class PKBCoBenh(db.Model):
@@ -190,7 +194,6 @@ class LichKham(db.Model):
     user_id = Column(Integer, ForeignKey(User.id), nullable=False)
     khunggio_id = Column(Integer, ForeignKey(KhungGio.id), nullable=False)
     ngay = Column(Date, default=datetime.datetime.now())
-    danhsachkham_id = Column(Integer, ForeignKey(DanhSachKham.id), nullable=False)
     isTrong = Column(Boolean)
 
 class PhieuDatLich(db.Model):
@@ -199,6 +202,7 @@ class PhieuDatLich(db.Model):
     benhnhan_id = Column(Integer, ForeignKey(BenhNhan.id), nullable=False)
     user_id = Column(Integer, ForeignKey(User.id), nullable=False)
     trieuchung = Column(String(50))
+    danhsachkham_id = Column(Integer, ForeignKey(DanhSachKham.id))
 
 class BinhLuan(db.Model):
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -300,11 +304,13 @@ if __name__ == '__main__':  # Tự phát hiện cái bảng này chưa có và n
         db.session.commit()
 
         # Thuốc
-        t1 = Thuoc(ten='Xylocaine Jelly', tac_dung='Gây tê bôi trơn, giảm đau ngoài da', gia=55600, donvithuoc_id=1)
+        t1 = Thuoc(ten='Xylocaine Jelly', tac_dung='Gây tê bôi trơn, giảm đau ngoài da', gia=55600, tonkho=3600,
+                   donvithuoc_id=1)
         t2 = Thuoc(ten='Vintanil',
                    tac_dung='Điều trị cơn chóng mặt không rõ nguyên nhân, chóng mặt do kích thích, chóng mặt do ngộ độc thực phẩm, chóng mặt do tác dụng phụ của thuốc',
-                   gia=11983, donvithuoc_id=3)
-        t3 = Thuoc(ten='Vipredni 16mg', tac_dung='Chống viêm và ức chế hệ thống miễn dịch', gia=1890, donvithuoc_id=2)
+                   gia=11983, tonkho=6000, donvithuoc_id=3)
+        t3 = Thuoc(ten='Vipredni 16mg', tac_dung='Chống viêm và ức chế hệ thống miễn dịch', gia=1890, tonkho=5500,
+                   donvithuoc_id=2)
         db.session.add_all([t1, t2, t3])
         db.session.commit()
 
@@ -316,9 +322,9 @@ if __name__ == '__main__':  # Tự phát hiện cái bảng này chưa có và n
         db.session.commit()
 
         # Thuốc thuộc loại
-        ttl1 = ThuocThuocLoai(tonkho=6000, thuoc_id=2, loaithuoc_id=3)
-        ttl2 = ThuocThuocLoai(tonkho=3600, thuoc_id=1, loaithuoc_id=2)
-        ttl3 = ThuocThuocLoai(tonkho=5500, thuoc_id=3, loaithuoc_id=1)
+        ttl1 = ThuocThuocLoai(thuoc_id=2, loaithuoc_id=3)
+        ttl2 = ThuocThuocLoai(thuoc_id=1, loaithuoc_id=2)
+        ttl3 = ThuocThuocLoai(thuoc_id=3, loaithuoc_id=1)
         db.session.add_all([ttl1, ttl2, ttl3])
         db.session.commit()
 
@@ -346,23 +352,15 @@ if __name__ == '__main__':  # Tự phát hiện cái bảng này chưa có và n
         db.session.commit()
 
         # Lịch khám
-        lk1 = LichKham(user_id=2, khunggio_id=1, danhsachkham_id=1, isTrong=True)
-        lk2 = LichKham(user_id=2, khunggio_id=2, danhsachkham_id=1, isTrong=True)
-        lk3 = LichKham(user_id=2, khunggio_id=3, danhsachkham_id=1, isTrong=True)
+        lk1 = LichKham(user_id=2, khunggio_id=1, isTrong=True)
+        lk2 = LichKham(user_id=2, khunggio_id=2, isTrong=True)
+        lk3 = LichKham(user_id=2, khunggio_id=3, isTrong=True)
 
-        lk4 = LichKham(user_id=2, khunggio_id=1, danhsachkham_id=1, isTrong=True, ngay='2024-12-24')
-        lk5 = LichKham(user_id=2, khunggio_id=2, danhsachkham_id=1, isTrong=True, ngay='2024-12-25')
-        lk6 = LichKham(user_id=2, khunggio_id=3, danhsachkham_id=1, isTrong=True, ngay='2024-12-26')
+        lk4 = LichKham(user_id=2, khunggio_id=1, isTrong=True, ngay='2024-12-24')
+        lk5 = LichKham(user_id=2, khunggio_id=2, isTrong=True, ngay='2024-12-25')
+        lk6 = LichKham(user_id=2, khunggio_id=3, isTrong=True, ngay='2024-12-26')
         db.session.add_all([lk1, lk2, lk3, lk4, lk5, lk6])
         db.session.commit()
-
-        # Danh sách khám có bệnh nhân
-        dskcbn1 = DSKhamCoBenhNhan(danhsachkham_id=1, benhnhan_id=2)
-        dskcbn2 = DSKhamCoBenhNhan(danhsachkham_id=2, benhnhan_id=3)
-        dskcbn3 = DSKhamCoBenhNhan(danhsachkham_id=3, benhnhan_id=1)
-        db.session.add_all([dskcbn1, dskcbn2, dskcbn3])
-        db.session.commit()
-
 
         # Các bình luận
         bl1 = BinhLuan(ten='Yến Hoàng', nghenghiep='Kế Toán', binhluan='bệnh viện sạch sẽ, dịch vụ nhanh chóng',

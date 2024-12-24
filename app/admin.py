@@ -1,4 +1,6 @@
+import hashlib
 import math
+import pdb
 from datetime import datetime
 
 from flask_admin.contrib.sqla.fields import QuerySelectField
@@ -19,8 +21,8 @@ admin = Admin(app=app, name='Phòng Khám Tư', template_mode='bootstrap4') #Đ�
 
 #Giới hạn quyền theo UserRole:
 class AdminView(ModelView):
+    page_size = 10
     def is_accessible(self): #Được phép truy cập nếu như, còn không thì ẩn
-        page_size = 10
         return current_user.is_authenticated and current_user.vaitro == UserRole.ADMIN
 
 class BSView(BaseView):
@@ -66,7 +68,8 @@ class LDSKView(YTView):
     @expose('/')
     def index(self):
         sobnmax = dao.load_sobntoida()
-        return self.render('admin/danhsachkham.html', sobntoida = sobnmax)
+        ngayhientai = datetime.now().strftime('%Y-%m-%d')
+        return self.render('admin/danhsachkham.html', sobntoida = sobnmax, ngayhientai = ngayhientai)
 admin.add_view(LDSKView(name='Lập danh sách khám'))
 
 #View của Thu ngân:
@@ -78,6 +81,9 @@ class TTHDView(TNView):
         so_phan_tu = app.config['SO_PHAN_TU']
         total = dao.count_so_phan_tu(HoaDon)
         hds = dao.load_hoadon(int(page))
+
+        # import pdb
+        # pdb.set_trace()
 
         return self.render('admin/hoadon.html', hoadons = hds, pages = math.ceil(total/so_phan_tu))
 admin.add_view(TTHDView(name='Thanh toán hóa đơn'))
@@ -97,7 +103,7 @@ class UserView(AdminView):
     form_args = {
         'gioitinh': {
             'choices': [(True, 'Nữ'), (False, 'Nam')], # giá trị chuỗi `'True'` hoặc `'False'`
-            'coerce': lambda x: x == "True",# Ép kiểu giá trị thành boolean
+            'coerce': lambda x: x in ["True", True], # Ép kiểu giá trị thành boolean
             'label': 'Giới Tính'
         }
     }
@@ -125,23 +131,22 @@ class UserView(AdminView):
     def on_model_change(self, form, model, is_created):
         if form.chuyennganh.data:
             model.chuyennganh_id = form.chuyennganh.data.id
+        if form.password.data:  # 'password' cần khớp với tên trường password trong form
+            model.password =hashlib.md5(form.password.data.encode('utf-8')).hexdigest()
         super().on_model_change(form, model, is_created)
-
-    def on_model_change(self, form, model, is_created):
-        if form.chuyennganh.data:
-            model.chuyennganh_id = form.chuyennganh.data.id
-        super().on_model_change(form, model, is_created)
-
 
 class QLThuocView(AdminView):
-    column_list = ['ten','tac_dung','gia','donvithuoc.donvi','tonkho','loaithuocs']
+    edit_modal = True
+    create_modal = True
+    column_list = ['ten', 'tac_dung', 'gia', 'donvithuoc.donvi', 'tonkho', 'loaithuocs']
+    column_searchable_list = ['ten']
     column_labels = {
         'ten': 'Tên',
-        'tac_dung':'Tác dụng',
+        'tac_dung': 'Tác dụng',
         'gia': 'Giá',
         'tonkho': 'Tồn kho',
         'donvithuoc.donvi': 'Đơn vị thuốc',
-        'loaithuocs':'Loại thuốc'
+        'loaithuocs': 'Loại thuốc'
     }
     form_extra_fields = {
         'donvithuoc': QuerySelectField(
@@ -153,7 +158,11 @@ class QLThuocView(AdminView):
         )
     }
     form_excluded_columns = ['chitietphieukhams']
-    page_size = 10
+
+    def on_model_change(self, form, model, is_created):
+        if form.donvithuoc.data:
+            model.donvithuoc_id = form.donvithuoc.data.id
+        super().on_model_change(form, model, is_created)
 
     def on_model_change(self, form, model, is_created):
         if form.donvithuoc.data:
@@ -166,6 +175,9 @@ class QLThuocView(AdminView):
         super().on_model_change(form, model, is_created)
 
 class QLLoaiThuocView(AdminView):
+    edit_modal = True
+    create_modal = True
+    column_searchable_list = ['ten']
     column_list = ['ten']
     column_labels = {
         'ten': 'Tên Loại Thuốc'
@@ -187,13 +199,13 @@ class SoBenhNhanView(BaseView):
         if request.method.__eq__('PUT'):
             try:
                 new_max = int(request.form.get('maxPatients'))
-                new_quality = int(request.form.get('maxPatientsInput'))
+                new_quality = int(request.form.get('price'))
                 if new_max < 1:
                     return jsonify({"success": False, "message": "Giá trị phải lớn hơn 0!"}), 400
 
                 if new_quality < 1:
                     return jsonify({"success": False, "message": "Giá trị phải lớn hơn 0!"}), 400
-                app.config['SO_TIEN_KHAM'] = new_quality
+                # app.config['SO_TIEN_KHAM'] = new_quality
 
                 return jsonify({"success": True, "message": "Cập nhật thành công!"}), 200
             except Exception as e:
@@ -201,7 +213,7 @@ class SoBenhNhanView(BaseView):
 
         sobnmax = dao.load_sobntoida()
         sotienkham = dao.load_sotienkham()
-        return self.render('admin/bntoida.html', sobntoida = sobnmax, sotienkham = sotienkham)
+        return self.render('admin/bntoida.html', sobntoida = sobnmax, sotienkham = f"{sotienkham:,}")
 
     def is_accessible(self):
         return current_user.is_authenticated and current_user.vaitro == UserRole.ADMIN
@@ -212,8 +224,18 @@ class ThongKeView(BaseView):
     @expose('/')
     def index(self):
         monthmedicine = request.args.get('monthMedicine', datetime.now().month)
+        yearmedicine = request.args.get('yearMedicine', datetime.now().year)
         month = request.args.get('month', datetime.now().month)
-        return self.render('/admin/thongke.html',medicine_stats=dao.medicine_rates_month_stats(monthmedicine), tansuatkhamtheothang=dao.tansuatkham(month))
+        year =  request.args.get('year', datetime.now().year)
+        monthstats = request.args.get('monthstats', datetime.now().month)
+        yearstats =  request.args.get('yearstats', datetime.now().year)
+        doanhthu = dao.doanhthu(monthstats, yearstats)
+        tongdoanhthu = sum(item[2] for item in doanhthu if item[2])
+        return self.render('/admin/thongke.html',medicine_stats=dao.medicine_rates_month_stats(monthmedicine,yearmedicine), tansuatkhamtheothang=dao.tansuatkham(month,year), doanhthu = doanhthu,tongdoanhthu= tongdoanhthu,monthmedicine=monthmedicine,yearmedicine=yearmedicine,
+                           month=month,
+                           year=year,
+                           monthstats=monthstats,
+                           yearstats=yearstats)
 
     # , profit_stats = utils.profit_month_stats(month), total_month_profit = utils.total_profit_mont(month),
 
