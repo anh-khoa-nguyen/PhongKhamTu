@@ -2,7 +2,8 @@ import datetime
 from datetime import date
 
 from app.models import User, HoaDon, PhieuKhamBenh, BenhNhan, ChuyenNganh, UserRole, LichKham, KhungGio, PhieuDatLich, \
-    DanhSachKham, PhieuKhamBenh, ChiTietPhieuKham, Thuoc, DonViThuoc, BinhLuan  # Dùng DL trong bảng dữ liệu
+    DanhSachKham, PhieuKhamBenh, ChiTietPhieuKham, Thuoc, DonViThuoc, BinhLuan, PKBCoBenh, \
+    LoaiBenh  # Dùng DL trong bảng dữ liệu
 
 from app import app, db  # Import để lấy các thông số cấu hình, db để thêm vào CSDL
 import hashlib
@@ -14,6 +15,10 @@ def count_so_phan_tu(object):
 
 def load_object(object):
     query = object.query.order_by("id")
+    return query.all()
+
+def load_chuyennganh():
+    query = ChuyenNganh.query.filter_by(isKham=1).order_by("id")
     return query.all()
 
 # Trang đặt lịch khám
@@ -185,8 +190,19 @@ def get_user_by_id(user_id):
     return User.query.get(user_id)  # Truy vấn trong bảng dữ liệu để lấy user_id
 
 # Trang hóa đơn
-# Trang hóa đơn
-# def load_hoadon(page=1, date=datetime.date.today()):
+
+from sqlalchemy import func
+
+
+# def load_hoadon(page=1, date=datetime.date.today(), danhsach_hoadon=None):
+#     """
+#     Hàm lấy danh sách hóa đơn, cho phép lọc kết quả dựa trên danh sách hóa đơn cụ thể (nếu được cung cấp).
+#
+#     :param page: Số trang (mặc định: 1)
+#     :param date: Ngày cần lọc hóa đơn (mặc định: hôm nay)
+#     :param danhsach_hoadon: Danh sách các hóa đơn để lọc (mặc định: None).
+#     :return: Danh sách hóa đơn đã được xử lý.
+#     """
 #     query = db.session.query(
 #         HoaDon.id.label('hoadon_id'),
 #         HoaDon.isThanhtoan.label('hoadon_isThanhtoan'),
@@ -195,13 +211,23 @@ def get_user_by_id(user_id):
 #         BenhNhan.sdt.label('benhnhan_sdt'),
 #         BenhNhan.gioitinh.label('benhnhan_gioitinh'),
 #         BenhNhan.ngaysinh.label('benhnhan_ngaysinh'),
-#         PhieuKhamBenh.ngaykham.label('phieukham_ngaykham')
+#         PhieuKhamBenh.ngaykham.label('phieukham_ngaykham'),
+#         func.sum(Thuoc.gia * ChiTietPhieuKham.soluongthuoc).label("tong_tien_thuoc")
 #     ).select_from(HoaDon) \
 #         .join(PhieuKhamBenh, HoaDon.phieukhambenh_id == PhieuKhamBenh.id) \
 #         .join(BenhNhan, PhieuKhamBenh.benhnhan_id == BenhNhan.id) \
 #         .join(User, HoaDon.user_id == User.id) \
-#         .order_by(HoaDon.id)
+#         .join(ChiTietPhieuKham, ChiTietPhieuKham.phieukhambenh_id == PhieuKhamBenh.id) \
+#         .join(Thuoc, ChiTietPhieuKham.thuoc_id == Thuoc.id) \
+#         .group_by(HoaDon.id, BenhNhan.ten, BenhNhan.sdt, BenhNhan.gioitinh, BenhNhan.ngaysinh, PhieuKhamBenh.ngaykham)
 #
+#     # Nếu `danhsach_hoadon` được cung cấp, lọc theo danh sách này
+#     if danhsach_hoadon:
+#         # Trích xuất danh sách `id` từ các đối tượng `HoaDon`
+#         hoadon_ids = [hd.id for hd in danhsach_hoadon]
+#         query = query.filter(HoaDon.id.in_(hoadon_ids))
+#
+#     # Áp dụng phân trang
 #     query = so_phan_tu(page, query)
 #
 #     result = [
@@ -211,21 +237,28 @@ def get_user_by_id(user_id):
 #             "sdt": benhnhan_sdt,
 #             "gioitinh": benhnhan_gioitinh,
 #             "isThanhtoan": hoadon_isThanhtoan,
-#             "gia_kham": gia_kham,  # Thêm giá khám vào kết quả trả về
+#             "gia_kham": gia_kham,
+#             "value": tong_tien_thuoc,  # Tổng số tiền thuốc (định dạng số)
 #             "ngaysinh": benhnhan_ngaysinh,
 #             "ngaykham": phieukham_ngaykham
 #         }
 #         for
-#         hoadon_id, hoadon_isThanhtoan, gia_kham, benhnhan_ten, benhnhan_sdt, benhnhan_gioitinh, benhnhan_ngaysinh, phieukham_ngaykham
+#         hoadon_id, hoadon_isThanhtoan, gia_kham, benhnhan_ten, benhnhan_sdt, benhnhan_gioitinh, benhnhan_ngaysinh, phieukham_ngaykham, tong_tien_thuoc
 #         in query.all()
 #     ]
 #
 #     return result
+def load_hoadon(page=1, date=datetime.date.today(), danhsach_hoadon=None, chitiet=False):
+    """
+    Hàm lấy danh sách hóa đơn, cho phép lọc kết quả dựa trên danh sách hóa đơn cụ thể (nếu được cung cấp).
+    Khi chitiet=True, lấy thêm thông tin chi tiết phiếu khám và toa thuốc.
 
-from sqlalchemy import func
-
-
-def load_hoadon(page=1, date=datetime.date.today()):
+    :param page: Số trang (mặc định: 1)
+    :param date: Ngày cần lọc hóa đơn (mặc định: hôm nay)
+    :param danhsach_hoadon: Danh sách các hóa đơn để lọc (mặc định: None).
+    :param chitiet: Nếu True, lấy thêm thông tin chi tiết phiếu khám và toa thuốc.
+    :return: Danh sách hóa đơn đã được xử lý.
+    """
     query = db.session.query(
         HoaDon.id.label('hoadon_id'),
         HoaDon.isThanhtoan.label('hoadon_isThanhtoan'),
@@ -244,6 +277,13 @@ def load_hoadon(page=1, date=datetime.date.today()):
         .join(Thuoc, ChiTietPhieuKham.thuoc_id == Thuoc.id) \
         .group_by(HoaDon.id, BenhNhan.ten, BenhNhan.sdt, BenhNhan.gioitinh, BenhNhan.ngaysinh, PhieuKhamBenh.ngaykham)
 
+    # Nếu `danhsach_hoadon` được cung cấp, lọc theo danh sách này
+    if danhsach_hoadon:
+        # Trích xuất danh sách `id` từ các đối tượng `HoaDon`
+        hoadon_ids = [hd.id for hd in danhsach_hoadon]
+        query = query.filter(HoaDon.id.in_(hoadon_ids))
+
+    # Áp dụng phân trang
     query = so_phan_tu(page, query)
 
     result = [
@@ -263,11 +303,33 @@ def load_hoadon(page=1, date=datetime.date.today()):
         in query.all()
     ]
 
+    # Nếu `chitiet=True`, lấy thêm chi tiết hóa đơn
+    if chitiet:
+        for hoadon in result:
+            chi_tiet_query = db.session.query(
+                ChiTietPhieuKham.soluongthuoc,  # Số lượng thuốc
+                Thuoc.ten.label("tenthuoc"),  # Tên thuốc
+                Thuoc.gia.label("dongia"),  # Đơn giá
+            ).select_from(ChiTietPhieuKham) \
+                .join(Thuoc, ChiTietPhieuKham.thuoc_id == Thuoc.id) \
+                .filter(ChiTietPhieuKham.phieukhambenh_id == PhieuKhamBenh.id) \
+                .filter(PhieuKhamBenh.id == HoaDon.query.get(hoadon["id"]).phieukhambenh_id)
+
+            hoadon["chitiet"] = [
+                {
+                    "tenthuoc": row.tenthuoc,
+                    "soluongthuoc": row.soluongthuoc,
+                    "gia": row.dongia,
+                }
+                for row in chi_tiet_query.all()
+            ]
+
     return result
+
 
 def tim_hoadon(hoadonid):
     query = HoaDon.query.filter(HoaDon.id == hoadonid)
-    return query.first()
+    return query
 
 def load_phieukhambenh():
     query = db.session.query(PhieuKhamBenh, BenhNhan, User).select_from(PhieuKhamBenh).join(BenhNhan).join(User)
@@ -427,6 +489,308 @@ def create_danhsachkham(user_id, ngay):
         db.session.rollback()
         raise Exception(f"Lỗi khi xử lý danh sách khám: {str(e)}")
 
+# Trang
+def check_danhsachhd(ngay):
+    """
+    Lọc ra danh sách các phiếu đặt lịch có ngày đặt lịch trùng với ngày được chọn.
+    :param ngay: Ngày được chọn (string, định dạng 'YYYY-MM-DD')
+    :return: Danh sách các phiếu đặt lịch
+    """
+    # Chuyển ngày từ chuỗi sang kiểu datetime
+    ngay_datetime = datetime.datetime.strptime(ngay, '%Y-%m-%d').date()
+
+    # Truy vấn các phiếu đặt lịch theo ngày
+    query = HoaDon.query.filter(
+        extract('year', HoaDon.ngaytao) == ngay_datetime.year,
+        extract('month', HoaDon.ngaytao) == ngay_datetime.month,
+        extract('day', HoaDon.ngaytao) == ngay_datetime.day
+    )
+
+    return query.all()
+
+def update_hoadon(hoadon_id):
+    """
+    Cập nhật trạng thái isThanhtoan thành True cho một hóa đơn.
+    :param hoadon_id: ID của hóa đơn cần cập nhật
+    """
+    try:
+        hoadon = HoaDon.query.get(hoadon_id)
+        if not hoadon:
+            raise Exception("Không tìm thấy hóa đơn với ID được cung cấp.")
+
+        hoadon.isThanhtoan = True
+        db.session.commit()  # Lưu thay đổi vào cơ sở dữ liệu
+    except Exception as e:
+        db.session.rollback()  # Hoàn tác nếu có lỗi
+        raise Exception(f"Lỗi khi cập nhật hóa đơn: {str(e)}")
+
+#Lập phiếu khám
+def save_chitiet_phieukham(phieu_kham_id, drug_id, quantity):
+    from app.models import ChiTietPhieuKham  # Import model của chi tiết phiếu khám
+    from app import db  # SQLAlchemy database session
+
+    try:
+        # Tạo một bản ghi mới trong bảng ChiTietPhieuKham
+        chitiet_phieukham = ChiTietPhieuKham(
+            phieukhambenh_id=phieu_kham_id,
+            thuoc_id=drug_id,
+            soluongthuoc=quantity
+        )
+
+        db.session.add(chitiet_phieukham)  # Lưu dữ liệu vào session
+        update_tonkho(drug_id, quantity)
+        db.session.commit()  # Commit thay đổi vào database
+
+    except Exception as e:
+        # Nếu có lỗi xảy ra, rollback để không phá vỡ dữ liệu
+        db.session.rollback()
+        raise Exception(f"Lỗi khi lưu chi tiết phiếu khám: {str(e)}")
+
+def update_tonkho(thuoc_id, used_quantity):
+    """
+    Hàm cập nhật tồn kho của thuốc
+    :param thuoc_id: ID của thuốc cần cập nhật
+    :param used_quantity: Số lượng thuốc cần giảm
+    :raises Exception: Nếu tồn kho không đủ hoặc không tìm thấy thuốc
+    """
+    try:
+        # Lấy thuốc từ cơ sở dữ liệu
+        thuoc = Thuoc.query.get(thuoc_id)
+
+        # Nếu không tìm thấy thuốc
+        if not thuoc:
+            raise Exception(f"Không tìm thấy thuốc với ID: {thuoc_id}")
+
+        # Kiểm tra tồn kho hiện tại
+        if thuoc.tonkho < used_quantity:
+            raise Exception(
+                f"Không đủ tồn kho cho thuốc {thuoc.ten}. Hiện tại còn: {thuoc.tonkho}, cần: {used_quantity}")
+
+        # Tiến hành cập nhật tồn kho
+        thuoc.tonkho -= used_quantity
+
+        # Commit thay đổi vào database
+        db.session.commit()
+
+    except Exception as e:
+        # Rollback nếu có lỗi
+        db.session.rollback()
+        raise Exception(f"Lỗi khi cập nhật tồn kho thuốc: {str(e)}")
+
+
+def save_phieu_kham_va_cobenh(patient_id, ngay_kham, user_id, loaibenh_id):
+    """
+    Lưu phiếu khám bệnh (PhieuKhamBenh) và liên kết loại bệnh vào pkb-cobenh.
+
+    Args:
+        patient_id (int): ID bệnh nhân.
+        ngay_kham (datetime): Ngày khám.
+        user_id (int): ID người dùng (bác sĩ).
+        loaibenh_id (int): ID của loại bệnh.
+
+    Returns:
+        int: ID của phiếu khám bệnh mới được tạo.
+    """
+    from app.models import PhieuKhamBenh, PKBCoBenh  # Import các model cần thiết
+    from app import db  # SQLAlchemy session management
+
+    try:
+        # 1. Tạo phiếu khám bệnh
+        phieu_kham = PhieuKhamBenh(
+            benhnhan_id=patient_id,
+            ngaykham=ngay_kham,
+            user_id=user_id
+        )
+        db.session.add(phieu_kham)
+        db.session.flush()  # Đẩy dữ liệu xuống DB để lấy pkb_id
+
+        # 2. Lấy ID phiếu khám vừa tạo
+        pkb_id = phieu_kham.id
+
+        # 3. Tạo mối quan hệ với Loại Bệnh trong bảng PKBCoBenh
+        pkb_cobenh = PKBCoBenh(
+            phieukhambenh_id=pkb_id,
+            loaibenh_id=loaibenh_id
+        )
+        db.session.add(pkb_cobenh)
+
+        # 4. Commit dữ liệu vào database
+        # db.session.commit()
+        # for drug in drugs:
+        #     drug_id = drug.get('drugName')
+        #     quantity = drug.get('quantity')
+        #
+        #     if drug_id and quantity:
+        #         chitietPK = ChiTietPhieuKham(
+        #             phieukhambenh_id=phieu_kham.id,
+        #             thuoc_id=drug_id,
+        #             soluong=quantity
+        #         )
+        #         db.session.add(chitietPK)
+
+        # 3. Commit tất cả thay đổi
+        db.session.commit()
+
+        # 5. Trả về ID của phiếu khám bệnh vừa tạo
+        return pkb_id
+
+    except Exception as e:
+        # Nếu gặp lỗi, rollback toàn bộ giao dịch
+        db.session.rollback()
+        raise Exception(f"Lỗi khi lưu phiếu khám bệnh và pkb-cobenh: {str(e)}")
+
+def get_all_drugs():
+    # Truy vấn toàn bộ thuốc từ cơ sở dữ liệu
+    drugs = db.session.query(
+        Thuoc.id,
+        Thuoc.ten,
+        Thuoc.gia,
+        DonViThuoc.donvi,
+        Thuoc.tonkho
+    ).join(DonViThuoc, Thuoc.donvithuoc_id == DonViThuoc.id).all()
+
+    # Định dạng dữ liệu trả về
+    drug_list = [
+        {
+            "id": drug.id,
+            "ten": drug.ten,
+            "gia": drug.gia,
+            "donvi": drug.donvi,
+            "tonkho": drug.tonkho
+        }
+        for drug in drugs
+    ]
+
+    return drug_list
+
+def load_paitients(id):
+    benhnhan = BenhNhan.query.filter(BenhNhan.id == id).first()  # Tìm bệnh nhân theo ID
+    if benhnhan:
+        patient_info = {
+            "ten": benhnhan.ten,
+            "ngaysinh": format_date(benhnhan.ngaysinh),  # Định dạng lại ngày sinh
+            "sdt": benhnhan.sdt,
+        }
+        return True, patient_info
+    return False, None
+
+def format_date(date_obj):
+    try:
+        if isinstance(date_obj, datetime):  # Kiểm tra xem có phải kiểu datetime
+            return date_obj.strftime("%d/%m/%Y")  # Định dạng thành dd/mm/yyyy
+        return date_obj  # Nếu không phải datetime, trả về gốc
+    except Exception as e:
+        print(f"Error formatting date: {e}")
+        return date_obj
+
+def get_thuoc_id_by_name(thuoc_ten):
+    """
+       Truy vấn ID của thuốc dựa vào tên thuốc.
+       :param thuoc_ten: Tên thuốc (string).
+       :return: ID của thuốc (int) hoặc None nếu không tìm thấy.
+       """
+    from app.models import Thuoc
+    thuoc = Thuoc.query.filter(Thuoc.ten == thuoc_ten).first()
+    return thuoc.id
+
+def get_chitietphieukham_by_benhnhan_id(benhnhan_id):
+    # Truy vấn danh sách phiếu khám theo bệnh nhân ID
+    chitietphieus = db.session.query(ChiTietPhieuKham, Thuoc) \
+        .join(Thuoc, ChiTietPhieuKham.thuoc_id == Thuoc.id) \
+        .filter(ChiTietPhieuKham.phieukhambenh_id == PhieuKhamBenh.id) \
+        .filter(PhieuKhamBenh.benhnhan_id == benhnhan_id).all()
+
+    result = []
+    for ct, thuoc in chitietphieus:
+        result.append({
+            "tenthuoc": thuoc.ten,
+            "donvitinh": thuoc.donvithuoc.donvi,
+            "soluong": ct.soluongthuoc,
+            "trongkho": thuoc.tonkho,
+            "gia": thuoc.gia,
+            "tongcong": ct.soluongthuoc * thuoc.gia
+        })
+    return result
+
+def load_loaibenh():
+    try:
+        # Truy vấn danh sách các loại bệnh
+        loaibenhs = db.session.query(LoaiBenh).all()
+
+        # Chuyển đổi dữ liệu thành danh sách các dict
+        loaibenh_list = [
+            {"id": loaibenh.id, "ten": loaibenh.ten}
+            for loaibenh in loaibenhs
+        ]
+
+        return loaibenh_list
+    except Exception as e:
+        print(f"Lỗi khi truy vấn loại bệnh: {e}")
+        return []
+
+def get_lichsu_khambenh_by_benhnhan_id(benhnhan_id):
+    # Truy vấn thông tin lịch sử khám bệnh
+    lichsu = db.session.query(
+        PhieuKhamBenh.id.label('phieukhambenh_id'),
+        PhieuKhamBenh.ngaykham,
+        BenhNhan.ten.label('tenbenhnhan'),
+        BenhNhan.ngaysinh.label('ngaysinhbenhnhan'),
+        db.func.group_concat(LoaiBenh.ten).label('chuandoan')  # Ghép tên các loại bệnh liên quan
+    ).join(BenhNhan, PhieuKhamBenh.benhnhan_id == BenhNhan.id) \
+        .join(PKBCoBenh, PhieuKhamBenh.id == PKBCoBenh.phieukhambenh_id) \
+        .join(LoaiBenh, PKBCoBenh.loaibenh_id == LoaiBenh.id) \
+        .filter(BenhNhan.id == benhnhan_id) \
+        .group_by(PhieuKhamBenh.id, BenhNhan.ten, BenhNhan.ngaysinh) \
+        .order_by(PhieuKhamBenh.ngaykham.desc()) \
+        .all()
+
+    result = []
+    for item in lichsu:
+        result.append({
+            'phieukhambenh_id': item.phieukhambenh_id,
+            'ngaykham': item.ngaykham.strftime('%Y-%m-%d %H:%M:%S'),
+            'chuandoan': item.chuandoan.replace(",", ", "),  # Format lại hiển thị danh sách loại bệnh
+            'tenbenhnhan': item.tenbenhnhan,
+            'ngaysinhbenhnhan': item.ngaysinhbenhnhan.strftime('%Y-%m-%d')
+        })
+    return result
+
+def get_chitiet_donthuoc_by_phieukhambenh_id(phieukhambenh_id):
+    """
+    Lấy chi tiết đơn thuốc kèm theo tổng số tiền cần thanh toán
+    """
+    # Truy vấn chi tiết đơn thuốc từ database
+    chitiet = db.session.query(ChiTietPhieuKham, Thuoc) \
+        .join(Thuoc, ChiTietPhieuKham.thuoc_id == Thuoc.id) \
+        .filter(ChiTietPhieuKham.phieukhambenh_id == phieukhambenh_id).all()
+
+    result = []
+    tong_tien = 0  # Biến để lưu tổng tiền
+
+    for ct, thuoc in chitiet:
+        # Tính tổng cộng từng loại thuốc
+        tong_cong = ct.soluongthuoc * thuoc.gia
+        tong_tien += tong_cong  # Cộng dồn vào tổng tiền
+
+        # Thêm thông tin vào danh sách kết quả
+        result.append({
+            'tenthuoc': thuoc.ten,
+            'donvitinh': thuoc.donvithuoc.donvi,
+            'soluong': ct.soluongthuoc,
+            'trongkho': thuoc.tonkho,
+            'gia': thuoc.gia,
+            'tongcong': tong_cong
+        })
+
+    return {'chitiet': result, 'tong_tien': tong_tien}
+
+
+
+
+
+
+
 if __name__ == '__main__':
     with app.app_context():
-        create_danhsachkham(ngay='2024-12-24', user_id=3)
+        print(get_lichsu_khambenh_by_benhnhan_id(1))
+

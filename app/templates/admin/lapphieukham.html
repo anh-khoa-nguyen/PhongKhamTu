@@ -14,6 +14,7 @@
     }
 </style>
 
+<form id="form-pkb" action="/save-phieukham" method="POST">
 <div class="card-body">
     <div class="container mb-5 mt-3">
         <div class="row d-flex align-items-baseline">
@@ -22,10 +23,19 @@
                 </p>
             </div>
             <div class="col-xl-3 float-end">
-                <button type="submit" class="btn btn-light text-capitalize border-0" id="btnSave"
-                        data-bs-ripple-color="dark" form="invoiceForm"><i class="fas fa-save text-primary"></i> Save
+                <div style="display: inline-block" type="button"  class=" btn btn-light text-capitalize border-0" id="btnSave"
+                        data-bs-ripple-color="dark" onclick="toggleButtons()"  form="form-pkb"><i class="fas fa-save text-primary"></i> Save
+                </div>
+                 <button style="display: none" type="button" class="btn btn-light text-capitalize border-0" id="btnBack"
+                        data-bs-ripple-color="dark" onclick="toggleButtons()"  form="form-pkb"><i class="fas fa-save text-primary"></i> Back
+                </button>
+                <button style="display: inline-block" type="button" class="btn btn-light text-capitalize border-0" id="btnHistory"
+                        data-bs-ripple-color="dark" form="form-pkb" data-benhnhanid="" onclick="xemlichsukham(this)"
+                 data-toggle="modal"
+                                data-target="#exampleModal" disabled><i class="fas fa-save text-primary"></i> Xem lịch sử khám
                 </button>
             </div>
+
             <hr>
         </div>
 
@@ -43,21 +53,21 @@
             </div>
 
             <div class="d-flex">
-                <div class="row ">
-                    <div class="col-xl-8">
-                        <form class="form-inline" id="invoiceForm" action="/tai-lieu/xuat-hoa-don" method="post">
+                <div class="row col-xl-8 ">
+                    <div class="">
+
                             <div class="row g-3 align-items-center mb-auto">
                                 <div class="col-auto">
                                     <label for="Name">Bệnh nhân: </label>
                                 </div>
                                 <div class="col-auto">
                                     <input type="text" list="patients" id="ten" name="ten"
-                                           class="form-control mx-sm-3 border-0" value="" required="">
-                                    <input type="hidden" id="PatientId" name="PatientId" value="">
+                                           class="form-control mx-sm-3 border-0" value="" required="" oninput="checkName_Day_Sdt()">
+                                    <input type="hidden" form="form-pkb" id="PatientId" name="PatientId" value="">
                                 </div>
                                 <datalist id="patients">
                                     {% for patient in patients %}
-                                    <option value="{{ patient.ten }}" data-id="{{ patient.id }}" data-dob="{{ patient.ngaysinh }}" data-phone="{{ patient.sdt }}">
+                                    <option value="{{ patient.ten }}" id="{{patient.id}}" >
                                         {{ patient.ten }}
                                     </option>
                                     {% endfor %}
@@ -74,7 +84,7 @@
                                 </div>
                             </div>
 
-                            <div class="row g-3 align-items-center">
+                            <div class="row g-3 align-items-center" >
                                 <div class="col-auto">
                                     <label for="Numberphone">Điện thoại: </label>
                                 </div>
@@ -83,13 +93,13 @@
                                            name="NumberPhone" required="" readonly>
                                 </div>
                             </div>
-                        </form>
+
                     </div>
                 </div>
 
-                <div class="col-xl-5 ">
+                <div class="col-xl-4 ">
                     <p class="text-muted">Phiếu khám bệnh</p>
-                    <ul class="list-unstyled">
+                    <ul >
                         <li class="text-muted"><i class="fas fa-circle" style="color:#84B0CA ;"></i> <span
                                 class="fw-bold">Ngày tạo: </span><span>{{ current_time }}</span></li>
 
@@ -98,16 +108,27 @@
                                 <!-- Giảm margin-right để đưa label và input lại gần nhau -->
                                 <label for="Res" class="mb-0">Chuẩn đoán:</label>
                             </div>
+
                             <div>
-                                <input type="text" id="Res" class="form-control mx-1 border-0" value=""
-                                       name="Res" required="" style="width: auto;">
+                                <input list="BenhList" type="text" id="Res" class="form-control mx-1 border-0" value=""
+                                       name="Res" required="" style="width: auto;" onchange="updateLoaiBenh()">
+                                <input type="hidden" form="form-pkb" id="loaibenh_id" name="loaibenh_id" value="">
                             </div>
+                            <datalist id="BenhList">
+                          {% for loaibenh in loaibenhs %}
+                           <option
+                                   id="{{ loaibenh.id }}"
+                                   >{{ loaibenh.ten }}
+                           </option>
+                            {% endfor %}
+
+                      </datalist>
                         </div>
                     </ul>
                 </div>
             </div>
             <div class="row my-2 mx-1 justify-content-center invoiceBody">
-                <table class="table table-striped table-borderless auto-index">
+                <table id="drugTable" class="table table-striped table-borderless auto-index">
                     <thead style="background-color:#84B0CA ;" class="text-white">
                     <tr>
                         <th scope="col" class="text-center">STT</th>
@@ -120,22 +141,21 @@
                         <th scope="col" class="text-center"></th>
                     </tr>
                     </thead>
-                    <tbody id="tableBody">
+                    <tbody id="tableBodyy">
 
 
                     </tbody>
                       </table>
                       <datalist id="drugsList">
 
-                          {% for drug in drugs %}-->
-                             <option value="{{ drug[1] }}"
-                                      data-id="{{ drug[0] }}"
-                                     data-quantity="{{ drug[4] }}"
-                                      data-unit="{{ drug[3] }}"
-                                     data-price="{{ drug[2] }}">
-                             <!-- drug[0]: tên thuốc, ID; drug[1]: giá; drug[2]: đơn vị tính; drug[3]: số lượng tồn kho -->
-                             </option>
-                          {% endfor %}
+                          {% for drug in drugs %}
+    <option value="{{ drug.ten }}"
+            data-id="{{ drug.id }}"
+            data-stock="{{ drug.tonkho}}"
+            data-unit="{{ drug.donvi }}"
+            data-price="{{ drug.gia }}">
+    </option>
+    {% endfor %}
 
                       </datalist>
 
@@ -148,14 +168,17 @@
                         <path d="M8 0c-.176 0-.35.006-.523.017l.064.998a7.117 7.117 0 0 1 .918 0l.064-.998A8.113 8.113 0 0 0 8 0zM6.44.152c-.346.069-.684.16-1.012.27l.321.948c.287-.098.582-.177.884-.237L6.44.153zm4.132.271a7.946 7.946 0 0 0-1.011-.27l-.194.98c.302.06.597.14.884.237l.321-.947zm1.873.925a8 8 0 0 0-.906-.524l-.443.896c.275.136.54.29.793.459l.556-.831zM4.46.824c-.314.155-.616.33-.905.524l.556.83a7.07 7.07 0 0 1 .793-.458L4.46.824zM2.725 1.985c-.262.23-.51.478-.74.74l.752.66c.202-.23.418-.446.648-.648l-.66-.752zm11.29.74a8.058 8.058 0 0 0-.74-.74l-.66.752c.23.202.447.418.648.648l.752-.66zm1.161 1.735a7.98 7.98 0 0 0-.524-.905l-.83.556c.169.253.322.518.458.793l.896-.443zM1.348 3.555c-.194.289-.37.591-.524.906l.896.443c.136-.275.29-.54.459-.793l-.831-.556zM.423 5.428a7.945 7.945 0 0 0-.27 1.011l.98.194c.06-.302.14-.597.237-.884l-.947-.321zM15.848 6.44a7.943 7.943 0 0 0-.27-1.012l-.948.321c.098.287.177.582.237.884l.98-.194zM.017 7.477a8.113 8.113 0 0 0 0 1.046l.998-.064a7.117 7.117 0 0 1 0-.918l-.998-.064zM16 8a8.1 8.1 0 0 0-.017-.523l-.998.064a7.11 7.11 0 0 1 0 .918l.998.064A8.1 8.1 0 0 0 16 8zM.152 9.56c.069.346.16.684.27 1.012l.948-.321a6.944 6.944 0 0 1-.237-.884l-.98.194zm15.425 1.012c.112-.328.202-.666.27-1.011l-.98-.194c-.06.302-.14.597-.237.884l.947.321zM.824 11.54a8 8 0 0 0 .524.905l.83-.556a6.999 6.999 0 0 1-.458-.793l-.896.443zm13.828.905c.194-.289.37-.591.524-.906l-.896-.443c-.136.275-.29.54-.459.793l.831.556zm-12.667.83c.23.262.478.51.74.74l.66-.752a7.047 7.047 0 0 1-.648-.648l-.752.66zm11.29.74c.262-.23.51-.478.74-.74l-.752-.66c-.201.23-.418.447-.648.648l.66.752zm-1.735 1.161c.314-.155.616-.33.905-.524l-.556-.83a7.07 7.07 0 0 1-.793.458l.443.896zm-7.985-.524c.289.194.591.37.906.524l.443-.896a6.998 6.998 0 0 1-.793-.459l-.556.831zm1.873.925c.328.112.666.202 1.011.27l.194-.98a6.953 6.953 0 0 1-.884-.237l-.321.947zm4.132.271a7.944 7.944 0 0 0 1.012-.27l-.321-.948a6.954 6.954 0 0 1-.884.237l.194.98zm-2.083.135a8.1 8.1 0 0 0 1.046 0l-.064-.998a7.11 7.11 0 0 1-.918 0l-.064.998zM8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3v-3z"></path>
                     </svg>
                 </button>
+                <button id="btn-SavePK" onclick="submitDrugData()" class="btn btn-primary" type="submit" style="display: none;" >
+                    LƯU PHIẾU KHÁM
+                </button>
             </div>
             <div class="row">
                 <div class="col-xl-6">
                 </div>
                 <div class="col-xl-6">
                     <p class="text-black float-start"><span class="text-black me-3">Tổng số tiền cần thanh
-                                toán:</span><span style="font-size: 25px;"><input type="number" readonly="" required=""
-                                                                                  value="0" id="AllTotal"
+                                toán:</span><span style="font-size: 25px;"><input type="text" readonly="" required=""
+                                                                                  value="0" id="Total"
                                                                                   name="AllTotal" form="invoiceForm"
                                                                                   class="border-0"></span></p>
                 </div>
@@ -164,8 +187,79 @@
         </div>
     </div>
 </div>
+</form>
+
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+                 aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Lịch sử khám bệnh</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row d-flex align-items-baseline mb-2">
+                                <div class="col-xl-6">
+                                    <div class="form-group">
+                                        <label>Tên bệnh nhân:</label>
+                                        <div class="text-light p-2 bg-info font-weight-normal rounded"
+                                             id="modal-tenbn"></div>
+                                    </div>
+                                </div>
+                                <div class="col-xl-6">
+                                    <div class="form-group">
+                                        <label>Ngày sinh:</label>
+                                        <div class="text-light p-2 bg-info font-weight-normal rounded"
+                                             id="modal-ngaysinhbn"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row d-flex align-items-baseline">
+                                <table class="table table-striped table-borderless auto-index">
+                                    <thead style="background-color:#84B0CA ;" class="text-white">
+                                    <tr>
+                                        <th scope="col" class="text-center">STT</th>
+                                        <th scope="col" class="text-center">Ngày khám</th>
+                                        <th scope="col" class="text-center">Chuẩn đoán</th>
+                                        <th scope="col" class="text-center">Đơn thuốc</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody id="tableBody">
+                                    <tr>
+                                        <td class="text-center"></td>
+                                        <td class="text-center"></td>
+                                        <td class="text-center"></td>
+                                        <td class="text-center"><div class="btn btn-success">Xem chi tiết</div></td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                        </div>
+                        <div class="modal-footer">
+                            <div class="col-xl-3 d-flex justify-content-end">
+                                <button type="button" class="btn btn-secondary mr-2 btn-danger" data-dismiss="modal">Thoát</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
 
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 {% else %}
 {% endif %}
 {% endblock %}
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+     <div class="alert alert-success alert-dismissable" inert>
+    <button type="button" class="close" data-dismiss="alert">×</button>
+    Phiếu khám bệnh lưu thành công!
+</div>
+    {% endif %}
+{% endwith %}

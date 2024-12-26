@@ -1,11 +1,11 @@
 import datetime
 
-from flask import render_template, request, redirect, session, jsonify
-from app import app, login
+from flask import render_template, request, redirect, session, jsonify, flash
+from app import app, login, db
 
 import dao, json
 from flask_login import login_user, logout_user #Ghi nhận trạng thái login, logout của session (Một phiên)
-from app.models import ChuyenNganh, User, BinhLuan
+from app.models import ChuyenNganh, User, BinhLuan, LoaiBenh, BenhNhan
 
 
 @app.route("/", methods=['GET','POST'])
@@ -22,7 +22,7 @@ def index():
 
         dao.add_comment(avatar=avatar, ten=ten, nghenghiep=nghenghiep, binhluan=binhluan, star_value=star_value)
 
-        if not ten or not nghenghiep or not binhluan:
+        if not ten or not nghenghiep or not binhluan or not star_value:
             err_msg = 'Vui lòng nhập đầy đủ thông tin bắt buộc'
         else:
             err_msg = 'Những đánh giá của bạn là động lực cho chúng tôi'
@@ -74,7 +74,7 @@ def examine():
 
     # Dữ liệu cần thiết để render form
     ngaycls = dao.get_remaining_days()
-    cns = dao.load_object(ChuyenNganh)
+    cns = dao.load_chuyennganh()
     doctors = dao.load_bstrucca()
 
     return render_template('examine.html', chuyennganhs=cns, ngayconlai=ngaycls, doctors=doctors, loi=err_msg)
@@ -205,24 +205,27 @@ def api_create_danhsachkham(ngay):
         return jsonify({"error": f"Lỗi xảy ra: {str(e)}"}), 500
 
 @app.route('/api/checkdanhsachhd/<ngay>', methods=['POST'])
-def check_danh_sach_kham(ngay):
+def check_danh_sach_hd(ngay):
     try:
         # Gọi hàm tạo danh sách khám từ DAO
-        phieu_dat_lich = dao.check_danhsachkham(ngay)
-
-        # Trả về danh sách lọc được
-        result = [{
-            "ten": p.benhnhan.ten,
-            "ngaydatlich": p.ngaydatlich.strftime('%d/%m/%Y'),
-            "gioitinh": p.benhnhan.gioitinh,
-            "ngaysinh": p.benhnhan.ngaysinh.strftime('%d/%m/%Y'),
-            "sdt": p.benhnhan.sdt,
-            "bacsikham": p.user.ten,
-            "chuyennganh": p.user.chuyennganh.ten
-        } for p in phieu_dat_lich]
+        hoadons = dao.load_hoadon(danhsach_hoadon=dao.check_danhsachhd(ngay))
 
         # import pdb
         # pdb.set_trace()
+
+        # Trả về danh sách lọc được
+        result = [{
+            "id": h.get("id"),
+            "ten": h.get("ten"),
+            "sdt": h.get("sdt"),
+            "gioitinh": h.get("gioitinh"),
+            "isThanhtoan": h.get("isThanhtoan"),
+            "giakham": h.get("gia_kham"),  # Sửa thành "gia_kham" vì theo mẫu của bạn
+            "tienthuoc": h.get("value"),  # "value" thay vì "tienthuoc"
+            "ngaysinh": h.get("ngaysinh").strftime('%d/%m/%Y') if h.get("ngaysinh") else None,
+            "ngaykham": h.get("ngaykham").strftime('%d/%m/%Y, %H:%M:%S') if h.get("ngaykham") else None
+        } for h in hoadons]
+
 
         return jsonify(result), 200
     except Exception as e:
@@ -265,6 +268,16 @@ def login_process():
             return render_template('login.html', error=error)
 
     return render_template('login.html')
+
+@app.route('/api/thanhtoan/<int:hoadon_id>', methods=['PUT'])
+def api_thanhtoan(hoadon_id):
+    try:
+        # Gọi tới hàm trong `dao.py` để cập nhật trạng thái hóa đơn
+        dao.update_hoadon(hoadon_id=hoadon_id)
+        return jsonify({"message": "Hóa đơn đã được cập nhật thành công!"}), 200
+    except Exception as e:
+        return jsonify({"message": str(e)}), 400
+
 
 
 @app.route('/login-admin', methods=['post'])
@@ -309,6 +322,19 @@ def login_admin_process():
             return render_template('login.html', error=error)
 
     return render_template('login.html')
+
+@app.route('/api/hoadon/<int:hoadonid>', methods=['GET'])
+def get_hoadon(hoadonid):
+    # Gọi DAO để lấy thông tin hóa đơn với chi tiết
+    hoadon = dao.load_hoadon(danhsach_hoadon=dao.tim_hoadon(hoadonid=hoadonid), chitiet=True)
+
+    # import pdb
+    # pdb.set_trace()
+
+    if not hoadon:
+        return jsonify({'error': 'Hóa đơn không tồn tại'}), 404
+
+    return jsonify(hoadon[0])
 
 @app.route("/logout")
 def logout_process():
@@ -365,6 +391,72 @@ def update_price():
         }), 200  # Mã HTTP thành công
     except ValueError:
         return jsonify({"success": False, "message": "Giá trị maxPatients không hợp lệ!"}), 400
+
+@app.route("/save-phieukham", methods=["POST"])
+def save_phieu_kham():
+
+        patient_id = request.form.get("PatientId")  # ID bệnh nhân
+        loaibenh_id = request.form.get("loaibenh_id")  # Loaibenh
+        ngay_kham = datetime.datetime.now()  # Ngày khám
+        user_id = current_user.id
+        # import pdb
+        # pdb.set_trace()
+        if not patient_id or not loaibenh_id:
+            flash("Vui lòng nhập đầy đủ thông tin!", "error")
+            return redirect(request.referrer)  # Quay lại trang trước
+        # Lưu dữ liệu vào DB qua DAO
+        pkb_id = dao.save_phieu_kham_va_cobenh(patient_id, ngay_kham, user_id,loaibenh_id)
+        # import pdb
+        # pdb.set_trace()
+        drug_data = session.get('drug_data')
+        # import pdb
+        # pdb.set_trace()
+        for drug in drug_data:
+            drug_id = dao.get_thuoc_id_by_name(drug.get('drugName'))
+            print(f"drug_id for {drug.get('drugName')}: {drug_id}")
+            dao.save_chitiet_phieukham(
+                pkb_id,
+                drug_id,  # Tên thuốc
+                drug.get('quantity')  # Số lượng
+            )
+
+        # Chuyển hướng về trang kết quả hoặc tiếp tục trên cùng trang
+        flash("Phiếu khám bệnh lưu thành công!", "success")
+        return redirect("/admin/lpkview/")  # VD: chuyển về trang khác
+
+# import pdb
+    # pdb.set_trace()
+@app.route('/api/process-data', methods=['POST'])
+def process_data():
+    drug_data = request.get_json()  # Lấy dữ liệu từ body
+    import pdb
+    pdb.set_trace()
+    session['drug_data'] = drug_data  # Lưu vào session
+    return jsonify({'message': 'Dữ liệu đã được xử lý'}), 200  # Đảm bảo trả phản hồi
+@app.route('/api/checkName_Day_Sdt/<id>', methods=['POST'])
+def api_checkName_Day_Sdt(id):
+        # Nếu số điện thoại hợp lệ (10 số hoặc hơn), thực hiện logic kiểm tra
+        result, patient_info = dao.load_paitients(id)
+        # import pdb
+        # pdb.set_trace()
+
+        return jsonify({
+            "result": result,
+            "patient_info": patient_info
+        }), 200  # Trả về mã HTTP 200 (OK)
+
+@app.route('/api/lichsubenh/<int:benhnhan_id>', methods=['GET'])
+def get_lichsu_khambenh(benhnhan_id):
+    lichsu = dao.get_lichsu_khambenh_by_benhnhan_id(benhnhan_id)
+    return jsonify(lichsu), 200
+
+@app.route('/api/chitietdonthuoc/<int:phieukhambenh_id>', methods=['GET'])
+def get_chitiet_donthuoc(phieukhambenh_id):
+    # Lấy chi tiết đơn thuốc từ dao
+    chitiet_donthuoc = dao.get_chitiet_donthuoc_by_phieukhambenh_id(phieukhambenh_id)
+    return jsonify(chitiet_donthuoc), 200
+
+
 
 if __name__ == '__main__':
     from app import admin

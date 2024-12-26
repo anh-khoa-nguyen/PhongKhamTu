@@ -57,6 +57,8 @@
                             Bác sĩ
                             {% elif current_user.vaitro|string == 'UserRole.YTA' %}
                             Y tá
+                            {% elif current_user.vaitro|string == 'UserRole.THUNGAN' %}
+                            Y tá
                             {% else %}
                             {{ current_user.vaitro }}
                             {% endif %}
@@ -66,10 +68,10 @@
                 <hr>
                 <div class="row">
                     <div class="col-sm-3">
-                        <p class="mb-0">Chuyên khoa</p>
+                        <p class="mb-0">Chuyên ngành</p>
                     </div>
                     <div class="col-sm-9">
-                        <p class="text-muted mb-0">{{current_user.chuyenkhoa}}</p>
+                        <p class="text-muted mb-0">{{current_user.chuyennganh}}</p>
                     </div>
                 </div>
                 <hr>
@@ -84,7 +86,9 @@
                 <hr>
                 <div class="row">
                     <div class="col-sm-3">
-                        {% set search_url = "https://www.google.com/search?q=Bác sĩ " + current_user.ten %}
+                        {% set search_url = "https://www.google.com/search?q=" + (("Bác sĩ " if
+                        current_user.vaitro|string == 'UserRole.BACSI' else "") + ("Y tá " if current_user.vaitro|string
+                        in ['UserRole.YTA', 'UserRole.THUNGAN'] else "") + current_user.ten) %}
                         <p class="mb-0"><a href="{{ search_url }}" target="_blank">Tìm hiểu thêm</a></p>
                     </div>
                 </div>
@@ -144,7 +148,6 @@
                             </div>
                         </div>
 
-                        <!--              <p class="mb-1" style="color: #000;">Bạn chưa có tài khoản? Đăng ký tại <a href="/dang-ky-tai-khoan" style="color: rgb(0, 102, 255);">đây</a></p>-->
                     </form>
 
                 </div>

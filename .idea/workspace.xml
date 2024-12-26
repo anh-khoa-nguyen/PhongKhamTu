@@ -5,24 +5,18 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="53f2377e-1f22-4aa3-9d0e-fe6bb170842d" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/app/static/js/sotienkham.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/__init__.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/admin.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/dao.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/dao.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/index.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/index.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/static/css/styles.css" beforeDir="false" afterPath="$PROJECT_DIR$/app/static/css/styles.css" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/static/js/main.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/static/js/main.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/templates/admin/bntoida.html" beforeDir="false" afterPath="$PROJECT_DIR$/app/templates/admin/bntoida.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/templates/admin/danhsachkham.html" beforeDir="false" afterPath="$PROJECT_DIR$/app/templates/admin/danhsachkham.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/templates/admin/hoadon.html" beforeDir="false" afterPath="$PROJECT_DIR$/app/templates/admin/hoadon.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/templates/admin/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/app/templates/admin/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/templates/admin/lapphieukham.html" beforeDir="false" afterPath="$PROJECT_DIR$/app/templates/admin/lapphieukham.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/templates/admin/thongke.html" beforeDir="false" afterPath="$PROJECT_DIR$/app/templates/admin/thongke.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/templates/examine.html" beforeDir="false" afterPath="$PROJECT_DIR$/app/templates/examine.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/templates/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/app/templates/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/templates/layout/base.html" beforeDir="false" afterPath="$PROJECT_DIR$/app/templates/layout/base.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/templates/layout/header.html" beforeDir="false" afterPath="$PROJECT_DIR$/app/templates/layout/header.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -155,8 +149,8 @@
     <recent_temporary>
       <list>
         <item itemvalue="Python.index" />
-        <item itemvalue="Python.dao" />
         <item itemvalue="Python.models" />
+        <item itemvalue="Python.dao" />
         <item itemvalue="Python.admin" />
       </list>
     </recent_temporary>
@@ -195,8 +189,13 @@
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/app/dao.py</url>
-          <line>79</line>
+          <line>85</line>
           <option name="timeStamp" value="3" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$USER_HOME$/Documents/Zalo Received Files/dao (1).py</url>
+          <line>534</line>
+          <option name="timeStamp" value="6" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

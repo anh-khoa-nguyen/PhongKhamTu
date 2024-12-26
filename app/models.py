@@ -21,6 +21,7 @@ class UserRole(RoleEnum):  # Chỉ là định nghĩa enum.
 class ChuyenNganh(db.Model):
     id = Column(Integer, primary_key=True, autoincrement=True)
     ten = Column(String(50))
+    isKham = Column(Boolean, default=False)
     users = relationship('User', backref='chuyennganh',
                          lazy=True)
     def __str__(self):
@@ -74,7 +75,7 @@ class LoaiBenh(db.Model):
 class BenhNhan(db.Model):
     id = Column(Integer, primary_key=True, autoincrement=True)
     ten = Column(String(50))  # Không trùng lắp giữa các thể hiện
-    ngaysinh = Column(DateTime, default=datetime.datetime.now())
+    ngaysinh = Column(Date, default='2000-01-01')
     gioitinh = Column(Boolean)
     sdt = Column(String(10), nullable=False, unique=True)
     email = Column(String(50))
@@ -98,7 +99,6 @@ class DanhSachKham(db.Model):
 class PhieuKhamBenh(db.Model):
     id = Column(Integer, primary_key=True, autoincrement=True)
     ngaykham = Column(DateTime, default=datetime.datetime.now())
-    trieuchung = Column(String(50))
     benhnhan_id = Column(Integer, ForeignKey(BenhNhan.id), nullable=False)
     user_id = Column(Integer, ForeignKey(User.id), nullable=False)
     hoadons = relationship('HoaDon', backref='phieukhambenh',
@@ -220,10 +220,10 @@ if __name__ == '__main__':  # Tự phát hiện cái bảng này chưa có và n
         db.session.commit()
 
         # Chuyên ngành:
-        cn1 = ChuyenNganh(ten='Quản trị')
-        cn2 = ChuyenNganh(ten='Thu Ngân')
-        cn3 = ChuyenNganh(ten='Nhi đa khoa')
-        cn4 = ChuyenNganh(ten='Ngoại lồng ngực')
+        cn1 = ChuyenNganh(ten='Quản trị', isKham=False)
+        cn2 = ChuyenNganh(ten='Thu Ngân', isKham=False)
+        cn3 = ChuyenNganh(ten='Nhi đa khoa', isKham=True)
+        cn4 = ChuyenNganh(ten='Ngoại lồng ngực', isKham=True)
         db.session.add_all([cn1, cn2, cn3, cn4])
         db.session.commit()
 
@@ -269,9 +269,9 @@ if __name__ == '__main__':  # Tự phát hiện cái bảng này chưa có và n
         db.session.commit()
 
         # Phiếu khám bệnh:
-        pk1 = PhieuKhamBenh(trieuchung='Ho có đờm, chảy mũi', benhnhan_id=1, user_id=2)
-        pk2 = PhieuKhamBenh(trieuchung='Nóng sốt vào buổi chiều tối', benhnhan_id=2, user_id=2)
-        pk3 = PhieuKhamBenh(trieuchung='Chảy mũi, nóng sốt cả ngày', benhnhan_id=3, user_id=2)
+        pk1 = PhieuKhamBenh(benhnhan_id=1, user_id=2)
+        pk2 = PhieuKhamBenh(benhnhan_id=2, user_id=2)
+        pk3 = PhieuKhamBenh(benhnhan_id=3, user_id=2)
         db.session.add_all([pk1, pk2, pk3])
         db.session.commit()
         #

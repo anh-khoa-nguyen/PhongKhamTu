@@ -7,8 +7,9 @@ from flask_admin.contrib.sqla.fields import QuerySelectField
 from flask_admin.form import Select2Widget
 from wtforms.fields.choices import SelectField
 
+from app.dao import check_danhsachhd
 from app.models import User, UserRole, Thuoc, LoaiThuoc, HoaDon, ChuyenNganh, DonViThuoc, ThuocThuocLoai, \
-    BenhNhan
+    BenhNhan, LoaiBenh
 from flask_admin import Admin, BaseView, expose #View bình thường gọi là BaseView
 from app import app, db #Chèn db để thêm xóa sửa db
 from flask_admin.contrib.sqla import ModelView #Quản trị thằng nào đó thì import thằng đó vào, Model-View gắn liền với 1 view - 1 model,
@@ -43,22 +44,11 @@ class LPKView(BSView):
     def index(self):
         # Truy vấn tất cả bệnh nhân từ cơ sở dữ liệu
         current_time = datetime.now().strftime("%H:%M:%S, %d/%m/%Y")
-        patients = BenhNhan.query.all()
-        drugs = Thuoc.query.all()
-        drugs = db.session.query(
-            Thuoc.id,
-            Thuoc.ten.label('name'),  # Tên thuốc
-            Thuoc.gia.label('price'),  # Giá thuốc
-            DonViThuoc.donvi.label('unit'),  # Đơn vị tính thuốc
-            ThuocThuocLoai.tonkho.label('stock')  # Số lượng tồn kho
-        ).join(
-            DonViThuoc, Thuoc.donvithuoc_id == DonViThuoc.id
-        ).join(
-            ThuocThuocLoai, Thuoc.id == ThuocThuocLoai.thuoc_id
-        ).all()
-
-        return self.render('admin/lapphieukham.html', patients=patients, drugs=drugs, current_time=current_time)
-
+        patients = dao.load_object(BenhNhan)
+        # drugs = Thuoc.query.all()
+        drugs = dao.get_all_drugs()
+        loaibenhs= dao.load_object(LoaiBenh)
+        return self.render('admin/lapphieukham.html', patients=patients, drugs=drugs,loaibenhs=loaibenhs, current_time=current_time)
 
 
 admin.add_view(LPKView(name='Lập phiếu khám'))
@@ -77,15 +67,17 @@ class TTHDView(TNView):
     @expose('/', methods=['get', 'post'])
     def index(self):
 
+        ngayhientai = datetime.now().strftime('%Y-%m-%d')
         page = request.args.get('page', 1)  # Lấy page ra, mặc định không gửi lấy số 1
         so_phan_tu = app.config['SO_PHAN_TU']
         total = dao.count_so_phan_tu(HoaDon)
-        hds = dao.load_hoadon(int(page))
+
+        hds = dao.load_hoadon(int(page), danhsach_hoadon=dao.check_danhsachhd(ngayhientai))
 
         # import pdb
         # pdb.set_trace()
 
-        return self.render('admin/hoadon.html', hoadons = hds, pages = math.ceil(total/so_phan_tu))
+        return self.render('admin/hoadon.html', hoadons = hds, pages = math.ceil(total/so_phan_tu), ngayhientai=ngayhientai)
 admin.add_view(TTHDView(name='Thanh toán hóa đơn'))
 
 #View của Admin:
