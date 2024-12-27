@@ -10,6 +10,9 @@ import hashlib
 from sqlalchemy import extract, func
 import cloudinary.uploader
 
+from config import *
+from twilio.rest import Client
+
 def count_so_phan_tu(object):
     return object.query.count()
 
@@ -172,6 +175,13 @@ def dang_ky_kham(tenbn, sdtbn, emailbn, sinhbn, gioibn, trieuchungbn, bacsikhamb
         # Nếu tìm thấy, cập nhật isTrong thành False (0)
         lich_kham.isTrong = False
 
+    guiTn(
+        sdt=sdtbn,
+        context="dang_ky_kham",
+        ngay=ngaykhambn,
+        user_id=bacsikhambn
+    )
+
     # Commit tất cả các thay đổi vào cơ sở dữ liệu
     db.session.commit()
 
@@ -259,9 +269,13 @@ def load_hoadon(page=1, date=datetime.date.today(), danhsach_hoadon=None, chitie
     :param chitiet: Nếu True, lấy thêm thông tin chi tiết phiếu khám và toa thuốc.
     :return: Danh sách hóa đơn đã được xử lý.
     """
+    if danhsach_hoadon is not None and len(danhsach_hoadon) == 0:
+        return []
+
     query = db.session.query(
         HoaDon.id.label('hoadon_id'),
         HoaDon.isThanhtoan.label('hoadon_isThanhtoan'),
+        HoaDon.ngaytao.label('ngay_tao'),
         HoaDon.gia_kham.label('gia_kham'),
         BenhNhan.ten.label('benhnhan_ten'),
         BenhNhan.sdt.label('benhnhan_sdt'),
@@ -275,8 +289,8 @@ def load_hoadon(page=1, date=datetime.date.today(), danhsach_hoadon=None, chitie
         .join(User, HoaDon.user_id == User.id) \
         .join(ChiTietPhieuKham, ChiTietPhieuKham.phieukhambenh_id == PhieuKhamBenh.id) \
         .join(Thuoc, ChiTietPhieuKham.thuoc_id == Thuoc.id) \
-        .group_by(HoaDon.id, BenhNhan.ten, BenhNhan.sdt, BenhNhan.gioitinh, BenhNhan.ngaysinh, PhieuKhamBenh.ngaykham)
-
+        .group_by(HoaDon.id, BenhNhan.ten, BenhNhan.sdt, BenhNhan.gioitinh, BenhNhan.ngaysinh, PhieuKhamBenh.ngaykham)\
+        .order_by(HoaDon.id)
     # Nếu `danhsach_hoadon` được cung cấp, lọc theo danh sách này
     if danhsach_hoadon:
         # Trích xuất danh sách `id` từ các đối tượng `HoaDon`
@@ -296,10 +310,11 @@ def load_hoadon(page=1, date=datetime.date.today(), danhsach_hoadon=None, chitie
             "gia_kham": gia_kham,
             "value": tong_tien_thuoc,  # Tổng số tiền thuốc (định dạng số)
             "ngaysinh": benhnhan_ngaysinh,
-            "ngaykham": phieukham_ngaykham
+            "ngaykham": phieukham_ngaykham,
+            "ngaytao": ngay_tao
         }
         for
-        hoadon_id, hoadon_isThanhtoan, gia_kham, benhnhan_ten, benhnhan_sdt, benhnhan_gioitinh, benhnhan_ngaysinh, phieukham_ngaykham, tong_tien_thuoc
+        hoadon_id, hoadon_isThanhtoan, ngay_tao, gia_kham, benhnhan_ten, benhnhan_sdt, benhnhan_gioitinh, benhnhan_ngaysinh, phieukham_ngaykham, tong_tien_thuoc
         in query.all()
     ]
 
@@ -328,8 +343,8 @@ def load_hoadon(page=1, date=datetime.date.today(), danhsach_hoadon=None, chitie
 
 
 def tim_hoadon(hoadonid):
-    query = HoaDon.query.filter(HoaDon.id == hoadonid)
-    return query
+    return HoaDon.query.filter(HoaDon.id == hoadonid).all()
+
 
 def load_phieukhambenh():
     query = db.session.query(PhieuKhamBenh, BenhNhan, User).select_from(PhieuKhamBenh).join(BenhNhan).join(User)
@@ -476,6 +491,13 @@ def create_danhsachkham(user_id, ngay):
 
             for pdl in phieu_dat_lichs:
                 pdl.danhsachkham_id = ds_kham.id
+                patient_sdt = pdl.benhnhan.sdt
+                guiTn(
+                    sdt=patient_sdt,
+                    context="create_danhsachkham",
+                    ngay=ngay,
+                    user_id=pdl.user_id
+                )
 
             # Kiểm tra số lượng bệnh nhân
             total_benh_nhan = len(phieu_dat_lichs)
@@ -492,21 +514,22 @@ def create_danhsachkham(user_id, ngay):
 # Trang
 def check_danhsachhd(ngay):
     """
-    Lọc ra danh sách các phiếu đặt lịch có ngày đặt lịch trùng với ngày được chọn.
-    :param ngay: Ngày được chọn (string, định dạng 'YYYY-MM-DD')
-    :return: Danh sách các phiếu đặt lịch
+    Lọc ra danh sách các hóa đơn theo ngày khám.
+    :param ngay: Ngày cần lọc (string, định dạng 'YYYY-MM-DD')
+    :return: Danh sách các hóa đơn theo ngày khám
     """
     # Chuyển ngày từ chuỗi sang kiểu datetime
     ngay_datetime = datetime.datetime.strptime(ngay, '%Y-%m-%d').date()
 
-    # Truy vấn các phiếu đặt lịch theo ngày
-    query = HoaDon.query.filter(
-        extract('year', HoaDon.ngaytao) == ngay_datetime.year,
-        extract('month', HoaDon.ngaytao) == ngay_datetime.month,
-        extract('day', HoaDon.ngaytao) == ngay_datetime.day
+    # Truy vấn các hóa đơn theo ngày khám, join với bảng PhieuKhamBenh
+    query = HoaDon.query.join(PhieuKhamBenh, HoaDon.phieukhambenh_id == PhieuKhamBenh.id).filter(
+        extract('year', PhieuKhamBenh.ngaykham) == ngay_datetime.year,
+        extract('month', PhieuKhamBenh.ngaykham) == ngay_datetime.month,
+        extract('day', PhieuKhamBenh.ngaykham) == ngay_datetime.day
     )
 
     return query.all()
+
 
 def update_hoadon(hoadon_id):
     """
@@ -785,12 +808,81 @@ def get_chitiet_donthuoc_by_phieukhambenh_id(phieukhambenh_id):
     return {'chitiet': result, 'tong_tien': tong_tien}
 
 
+def tra_bacsi_va_khunggio(user_id, ngay):
+    """
+    Trả về khung giờ và tên bác sĩ dựa trên user_id và chuỗi ngày 'ngay'.
 
+    :param user_id: ID của bác sĩ.
+    :param ngay: Chuỗi ngày (định dạng "YYYY-MM-DD").
+    :return: Tuple (khung_gio, bac_si_name).
+    """
+    try:
+        # Chuyển chuỗi ngày sang đối tượng datetime.date
+        ngay_date = datetime.datetime.strptime(ngay, '%Y-%m-%d').date()
+    except ValueError:
+        # Trường hợp chuỗi ngày không hợp lệ
+        return "Ngày không hợp lệ", "Không rõ bác sĩ"
+
+    # Truy vấn lịch khám dựa trên ngay_date
+    lich_kham = LichKham.query.filter_by(user_id=user_id, ngay=ngay_date).first()
+    khung_gio = lich_kham.khunggio.khoangthoigian if lich_kham else "Không rõ"
+
+    # Truy vấn thông tin bác sĩ
+    bac_si = User.query.filter_by(id=user_id, vaitro=UserRole.BACSI).first()
+    bac_si_name = bac_si.ten if bac_si else "Không rõ bác sĩ"
+
+    return khung_gio, bac_si_name
+
+
+def guiTn(sdt, ngay=None, user_id=None, context="dang_ky_kham", **kwargs):
+    """
+    Gửi tin nhắn với nội dung tùy chỉnh dựa trên context.
+
+    :param sdt: Số điện thoại.
+    :param ngay: Ngày đăng ký khám.
+    :param user_id: ID của bác sĩ (user_id liên quan).
+    :param context: Ngữ cảnh gọi hàm.
+    :param kwargs: Các tham số bổ sung như bệnh nhân, dịch vụ, v.v...
+    """
+    # Chuẩn hóa định dạng số điện thoại
+    if sdt.startswith("0"):
+        sdt = "+84" + sdt[1:]
+    elif not sdt.startswith("+84"):
+        sdt = "+84" + sdt
+
+    # Dynamic Retrieval of khung_gio and bac_si
+    khung_gio, bac_si_name = tra_bacsi_va_khunggio(user_id, ngay)
+
+    # Generate message based on context
+    if context == "dang_ky_kham":
+        message_body = (
+            f"Đăng ký lịch khám thành công! Vui lòng đến vào ngày {ngay} "
+            f"trong khung giờ {khung_gio} để được khám bởi bác sĩ {bac_si_name}."
+        )
+    elif context == "create_danhsachkham":
+        message_body = (
+            f"Danh sách khám ngày {ngay} đã sẵn sàng! Khung giờ: {khung_gio} - "
+            f"Bác sĩ điều trị: {bac_si_name}"
+        )
+    else:
+        message_body = "Thông báo quan trọng từ phòng khám!"
+
+    # Sending SMS (Example using Twilio)
+    client = Client(account_sid, auth_token)
+    message = client.messages.create(
+        body=message_body,
+        from_=twilio_phone,
+        to=sdt
+    )
+
+    # Log message ID for confirmation
+    print(message.sid)
+    print("Tin nhắn đã được gửi thành công!")
 
 
 
 
 if __name__ == '__main__':
     with app.app_context():
-        print(get_lichsu_khambenh_by_benhnhan_id(1))
+        print(tra_bacsi_va_khunggio(5, ngay = '2024-12-27'))
 

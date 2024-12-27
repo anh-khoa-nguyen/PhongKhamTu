@@ -325,17 +325,17 @@
                 <form method="post" action="/" enctype="multipart/form-data">
                     <h2 id="phanhoi">Phản hồi</h2>
                     <div class="mb-3">
-                        <label for="name" class="form-label">Họ và tên</label>
+                        <label for="name" class="form-label">Họ và tên *</label>
                         <input type="text" class="form-control" id="name" aria-describedby="emailHelp"
                                name="name">
-                        <div id="emailHelp" class="form-text">We'll never share your information with anyone else.</div>
+                        <div id="emailHelp" class="form-text">Bạn là nguồn động lực của chúng tôi</div>
                     </div>
                     <div class="mb-3">
-                        <label for="exampleInputPassword1" class="form-label">Nghề nghiệp</label>
+                        <label for="exampleInputPassword1" class="form-label">Nghề nghiệp *</label>
                         <input type="text" class="form-control" id="exampleInputPassword1" name="nghenghiep">
                     </div>
                     <div class="mb-3">
-                        <label for="exampleInputPassword2" class="form-label">Cảm nhận của bạn về dịch vụ</label>
+                        <label for="exampleInputPassword2" class="form-label">Cảm nhận của bạn về dịch vụ *</label>
                         <input type="text" class="form-control" id="exampleInputPassword2" name="binhluan">
                     </div>
                     <div class="mb-3">
@@ -357,7 +357,7 @@
                     </div>
 
                     <button type="submit" class="btn btn-primary ">Submit</button>
-                    <div class="thongbao">
+                    <div class="thongbao mt-2">
                         {% if err_msg %}
                         <span class="{% if 'động lực' in err_msg %}message-success{% else %}message-error{% endif %}">{{ err_msg }}</span>
                         {% endif %}

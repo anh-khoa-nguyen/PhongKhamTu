@@ -33,7 +33,7 @@ class User(db.Model, UserMixin):
     ngaysinh = Column(Date)
     gioitinh = Column(Boolean)
     ngaythamgia = Column(DateTime, default=datetime.datetime.now())
-    email = Column(String(50))
+    email = Column(String(50), unique=True)
     username = Column(String(50), nullable=False, unique=True)
     password = Column(String(50), nullable=False)
     avatar = Column(String(100),
@@ -87,7 +87,7 @@ class BenhNhan(db.Model):
 class DanhSachKham(db.Model):
     id = Column(Integer, primary_key=True, autoincrement=True)
     ngaylap = Column(Date, default=datetime.datetime.now())
-    user_id = Column(Integer, ForeignKey(User.id), nullable=False)
+    user_id = Column(Integer, ForeignKey(User.id), nullable=True)
     # lichkhams = relationship('LichKham', backref='danhsachkham',
     #                          lazy=True)
     # benhnhans = relationship('BenhNhan', secondary='ds_kham_co_benh_nhan', lazy='subquery',
@@ -100,7 +100,7 @@ class PhieuKhamBenh(db.Model):
     id = Column(Integer, primary_key=True, autoincrement=True)
     ngaykham = Column(DateTime, default=datetime.datetime.now())
     benhnhan_id = Column(Integer, ForeignKey(BenhNhan.id), nullable=False)
-    user_id = Column(Integer, ForeignKey(User.id), nullable=False)
+    user_id = Column(Integer, ForeignKey(User.id), nullable=True)
     hoadons = relationship('HoaDon', backref='phieukhambenh',
                            lazy=True)
 
@@ -148,7 +148,7 @@ class ThuocThuocLoai(db.Model):
 class ChiTietPhieuKham(db.Model):
     id = Column(Integer, primary_key=True, autoincrement=True)
     soluongthuoc = Column(Integer)
-    thuoc_id = Column(Integer, ForeignKey(Thuoc.id), nullable=False)
+    thuoc_id = Column(Integer, ForeignKey(Thuoc.id), nullable=True)
     phieukhambenh_id = Column(Integer, ForeignKey(PhieuKhamBenh.id), nullable=False)
 
 
@@ -156,17 +156,17 @@ class HoaDon(db.Model):
     id = Column(Integer, primary_key=True, autoincrement=True)
     isThanhtoan = Column(Boolean)
     phieukhambenh_id = Column(Integer, ForeignKey(PhieuKhamBenh.id), nullable=False)
-    user_id = Column(Integer, ForeignKey(User.id), nullable=False)
+    user_id = Column(Integer, ForeignKey(User.id), nullable=True)
     ngaytao = Column(DateTime, default=datetime.datetime.now())
     # chitiethoadons = relationship('ChiTietHoaDon', backref='hoadon', lazy=True)
     gia_kham = db.Column(db.Integer, nullable=False, default=app.config['SO_TIEN_KHAM'])
 
 
-class ChiTietHoaDon(db.Model):
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    giathuoc = Column(Double)
-    giadichvu = Column(Double)
-    hoadon_id = Column(Integer, ForeignKey(HoaDon.id), nullable=False)
+# class ChiTietHoaDon(db.Model):
+#     id = Column(Integer, primary_key=True, autoincrement=True)
+#     giathuoc = Column(Double)
+#     giadichvu = Column(Double)
+#     hoadon_id = Column(Integer, ForeignKey(HoaDon.id), nullable=False)
 
 
 # class DSKhamCoBenhNhan(db.Model):
@@ -191,7 +191,7 @@ class KhungGio(db.Model):
 
 class LichKham(db.Model):
     id = Column(Integer, primary_key=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey(User.id), nullable=False)
+    user_id = Column(Integer, ForeignKey(User.id), nullable=True)
     khunggio_id = Column(Integer, ForeignKey(KhungGio.id), nullable=False)
     ngay = Column(Date, default=datetime.datetime.now())
     isTrong = Column(Boolean)
@@ -200,7 +200,7 @@ class PhieuDatLich(db.Model):
     id = Column(Integer, primary_key=True, autoincrement=True)
     ngaydatlich = Column(DateTime, default=datetime.datetime.now())
     benhnhan_id = Column(Integer, ForeignKey(BenhNhan.id), nullable=False)
-    user_id = Column(Integer, ForeignKey(User.id), nullable=False)
+    user_id = Column(Integer, ForeignKey(User.id), nullable=True)
     trieuchung = Column(String(50))
     danhsachkham_id = Column(Integer, ForeignKey(DanhSachKham.id))
 
@@ -288,8 +288,7 @@ if __name__ == '__main__':  # Tự phát hiện cái bảng này chưa có và n
         db.session.add_all([hd1, hd2, hd3])
         db.session.commit()
 
-        # Chi tiết hóa đơn
-        cthd1 = ChiTietHoaDon(giathuoc=50000, hoadon_id=1, )
+
 
 
         #
@@ -335,13 +334,13 @@ if __name__ == '__main__':  # Tự phát hiện cái bảng này chưa có và n
         db.session.add_all([ctpk1, ctpk2, ctpk3])
         db.session.commit()
 
-        # Danh sách khám
-        danhsachkham1 = DanhSachKham(user_id=1)
-        danhsachkham2 = DanhSachKham(user_id=2)
-        danhsachkham3 = DanhSachKham(user_id=3)
-        db.session.add_all([danhsachkham1, danhsachkham2, danhsachkham3])
-        db.session.commit()
-        #
+        # # Danh sách khám
+        # danhsachkham1 = DanhSachKham(user_id=1)
+        # danhsachkham2 = DanhSachKham(user_id=2)
+        # danhsachkham3 = DanhSachKham(user_id=3)
+        # db.session.add_all([danhsachkham1, danhsachkham2, danhsachkham3])
+        # db.session.commit()
+
         # Khung giờ:
         kg1 = KhungGio(id=1, khoangthoigian='8h - 10h')
         kg2 = KhungGio(id=2, khoangthoigian='10h - 12h')
@@ -356,9 +355,9 @@ if __name__ == '__main__':  # Tự phát hiện cái bảng này chưa có và n
         lk2 = LichKham(user_id=2, khunggio_id=2, isTrong=True)
         lk3 = LichKham(user_id=2, khunggio_id=3, isTrong=True)
 
-        lk4 = LichKham(user_id=2, khunggio_id=1, isTrong=True, ngay='2024-12-24')
-        lk5 = LichKham(user_id=2, khunggio_id=2, isTrong=True, ngay='2024-12-25')
-        lk6 = LichKham(user_id=2, khunggio_id=3, isTrong=True, ngay='2024-12-26')
+        lk4 = LichKham(user_id=2, khunggio_id=1, isTrong=True, ngay='2024-12-28')
+        lk5 = LichKham(user_id=2, khunggio_id=2, isTrong=True, ngay='2024-12-29')
+        lk6 = LichKham(user_id=2, khunggio_id=3, isTrong=True, ngay='2024-12-30')
         db.session.add_all([lk1, lk2, lk3, lk4, lk5, lk6])
         db.session.commit()
 
@@ -368,6 +367,21 @@ if __name__ == '__main__':  # Tự phát hiện cái bảng này chưa có và n
         bl2 = BinhLuan(ten='Mi Hồ', nghenghiep='Bất động sản', binhluan='bệnh viện tốt, dịch vụ ổn', star_value=2)
         bl3 = BinhLuan(ten='Khoa Nguyễn', nghenghiep='Giáo viên tâm lý', binhluan='bệnh viện ok', star_value=3)
         db.session.add_all([bl1, bl2, bl3])
+        db.session.commit()
+
+
+        #Bổ sung
+        u1 = User(ten='Bác sĩ Dương', username='bsduong', password=str(hashlib.md5('123456'.encode('utf-8')).hexdigest())
+                  # Encode phòng trường hợp mật khẩu có dấu TV, ép toàn bộ thành chụỗi
+                  , vaitro=UserRole.BACSI, email="bsduong@gmail.com", sdt='0123456786',
+                  ngaysinh='2001-11-05', gioitinh=0, chuyennganh_id=4)
+        db.session.add(u1)
+        db.session.commit()
+
+        lk4 = LichKham(user_id=5, khunggio_id=1, isTrong=True, ngay='2024-12-27')
+        lk5 = LichKham(user_id=5, khunggio_id=2, isTrong=True, ngay='2024-12-28')
+        lk6 = LichKham(user_id=5, khunggio_id=3, isTrong=True, ngay='2024-12-29')
+        db.session.add_all([lk4, lk5, lk6])
         db.session.commit()
 
 # LichKham: Bác sĩ - giờ (đưa ra cố định) - Istrống ==> Đủ 40 hàng thì không khám nữa: Ngày: isTrong = False

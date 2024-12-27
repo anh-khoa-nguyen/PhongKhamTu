@@ -240,7 +240,7 @@ function renderDanhSachHD(data) {
     // Xóa nội dung cũ trong bảng
     tableBody.innerHTML = "";
 
-
+    console.log(data)
     if (data && data.length > 0) {
         data.forEach((item, index) => {
             // Tạo một hàng `<tr>` mới với thông tin hóa đơn

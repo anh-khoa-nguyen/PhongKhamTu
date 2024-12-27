@@ -99,7 +99,7 @@ class UserView(AdminView):
             'label': 'Giới Tính'
         }
     }
-    column_searchable_list = ['ten']
+    column_searchable_list = ['ten', 'vaitro']
     column_labels = {
         'username': 'Username',
         'ten': 'Họ tên',
@@ -210,7 +210,7 @@ class SoBenhNhanView(BaseView):
     def is_accessible(self):
         return current_user.is_authenticated and current_user.vaitro == UserRole.ADMIN
 
-admin.add_view(SoBenhNhanView(name='Số bệnh nhân tối đa'))
+admin.add_view(SoBenhNhanView(name='Quy định'))
 
 class ThongKeView(BaseView):
     @expose('/')

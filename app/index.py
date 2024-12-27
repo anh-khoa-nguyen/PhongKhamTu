@@ -19,15 +19,13 @@ def index():
         avatar = request.files.get('avatar')
         star_value = request.form.get('rating')
 
-
-        dao.add_comment(avatar=avatar, ten=ten, nghenghiep=nghenghiep, binhluan=binhluan, star_value=star_value)
-
         if not ten or not nghenghiep or not binhluan or not star_value:
             err_msg = 'Vui lòng nhập đầy đủ thông tin bắt buộc'
         else:
+            dao.add_comment(avatar=avatar, ten=ten, nghenghiep=nghenghiep, binhluan=binhluan, star_value=star_value)
             err_msg = 'Những đánh giá của bạn là động lực cho chúng tôi'
     total_comments = dao.count_so_phan_tu(BinhLuan)
-    return render_template('index.html', binhluan = dao.load_comments(), total_comments=total_comments)
+    return render_template('index.html', binhluan = dao.load_comments(), total_comments=total_comments, err_msg=err_msg)
 
 @app.route("/examine", methods=['GET', 'POST'])
 def examine():
@@ -67,6 +65,7 @@ def examine():
                     giokhambn=giokhambn,
                     ngaykhambn=ngaykhambn
                 )
+
                 err_msg = 'Đăng ký lịch khám thành công'
 
     except Exception as e:
@@ -209,7 +208,8 @@ def check_danh_sach_hd(ngay):
     try:
         # Gọi hàm tạo danh sách khám từ DAO
         hoadons = dao.load_hoadon(danhsach_hoadon=dao.check_danhsachhd(ngay))
-
+        ds = danhsach_hoadon=dao.check_danhsachhd(ngay)
+        #
         # import pdb
         # pdb.set_trace()
 
@@ -225,7 +225,6 @@ def check_danh_sach_hd(ngay):
             "ngaysinh": h.get("ngaysinh").strftime('%d/%m/%Y') if h.get("ngaysinh") else None,
             "ngaykham": h.get("ngaykham").strftime('%d/%m/%Y, %H:%M:%S') if h.get("ngaykham") else None
         } for h in hoadons]
-
 
         return jsonify(result), 200
     except Exception as e:
@@ -326,10 +325,10 @@ def login_admin_process():
 @app.route('/api/hoadon/<int:hoadonid>', methods=['GET'])
 def get_hoadon(hoadonid):
     # Gọi DAO để lấy thông tin hóa đơn với chi tiết
-    hoadon = dao.load_hoadon(danhsach_hoadon=dao.tim_hoadon(hoadonid=hoadonid), chitiet=True)
-
+    test = dao.tim_hoadon(hoadonid=hoadonid)
     # import pdb
     # pdb.set_trace()
+    hoadon = dao.load_hoadon(danhsach_hoadon=dao.tim_hoadon(hoadonid=hoadonid), chitiet=True)
 
     if not hoadon:
         return jsonify({'error': 'Hóa đơn không tồn tại'}), 404
@@ -429,8 +428,6 @@ def save_phieu_kham():
 @app.route('/api/process-data', methods=['POST'])
 def process_data():
     drug_data = request.get_json()  # Lấy dữ liệu từ body
-    import pdb
-    pdb.set_trace()
     session['drug_data'] = drug_data  # Lưu vào session
     return jsonify({'message': 'Dữ liệu đã được xử lý'}), 200  # Đảm bảo trả phản hồi
 @app.route('/api/checkName_Day_Sdt/<id>', methods=['POST'])
@@ -455,8 +452,6 @@ def get_chitiet_donthuoc(phieukhambenh_id):
     # Lấy chi tiết đơn thuốc từ dao
     chitiet_donthuoc = dao.get_chitiet_donthuoc_by_phieukhambenh_id(phieukhambenh_id)
     return jsonify(chitiet_donthuoc), 200
-
-
 
 if __name__ == '__main__':
     from app import admin
